@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Report Card</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .result-container { max-width: 800px; margin: 30px auto; padding: 25px; border: 1px solid #ddd; border-radius: 10px; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header { text-align: center; margin-bottom: 20px; }
+        .info-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px; }
+        .info-bar p { margin: 5px 0; }
+        .result-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .result-table th, .result-table td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        .result-table th { background: #1f4e79; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="result-container">
+    {# Logic: Agar 'results' (list) hai toh index 0 le, agar 'result' (single) hai toh wahi le #}
+    {% set res = results[0] if results and results|length > 0 else (result if result else None) %}
+    
+    {% if res %}
+        <div class="header">
+            <h2 style="color:#1f4e79;">Academic Progress Report</h2>
+            <p><strong>Session:</strong> {{ res.session }} | <strong>Term:</strong> {{ res.exam_term }}</p>
+        </div>
+        
+        <div class="info-bar">
+            <p><strong>Admission No:</strong> {{ res.admission_no }}</p>
+            <p><strong>Roll No:</strong> {{ res.roll_no }}</p>
+            <p><strong>Name:</strong> {{ res.student_name }}</p>
+            <p><strong>Father's Name:</strong> {{ res.father_name }}</p>
+            <p><strong>Class:</strong> {{ res.class_name }}</p>
+        </div>
+        <hr>
+
+        {# Partial layouts ke liye variable setup #}
+        {% set result = res %} 
+        {# Case-insensitive check ke liye .lower() ka use kiya hai #}
+        {% set cls = res.class_name|string|lower %}
+        
+        {% if cls in ['nursery', 'lkg', 'ukg'] %}
+            {% include 'partials/nursery_layout.html' %}
+        {% elif cls in ['1', '2'] %}
+            {% include 'partials/primary_layout.html' %}
+        {% elif cls in ['3', '4', '5'] %}
+            {% include 'partials/middle_layout.html' %}
+        {% elif cls in ['6', '7', '8'] %}
+            {% include 'partials/high_layout.html' %}
+        {% else %}
+            <p style="text-align:center; color:red;">Class layout not configured for: {{ res.class_name }}</p>
+        {% endif %}
+
+        <div style="margin-top:30px; text-align:center;">
+            <button onclick="window.print()" style="padding:10px 25px; cursor:pointer; background:#1f4e79; color:white; border:none; border-radius:5px;">Print Report Card</button>
+        </div>
+
+    {% else %}
+        <div style="text-align:center; padding:50px;">
+            <h3 style="color:red;">Result Not Found!</h3>
+            <p>Please check your details (Class, Roll No, Term, Session) and try again.</p>
+            <a href="{{ url_for('index') }}">Go Back Home</a>
+        </div>
+    {% endif %}
+</div>
+
+</body>
+</html>

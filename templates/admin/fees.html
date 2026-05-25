@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Fees - Angels Valley</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+        body { display: flex; min-height: 100vh; background: #f4f6f9; }
+        
+        /* Sidebar (Common Layout) */
+        .sidebar { width: 260px; background: #1f4e79; color: white; height: 100vh; position: fixed; flex-shrink: 0; }
+        .sidebar h2 { padding: 20px; font-size: 20px; color: #ffcc00; text-align: center; }
+        .sidebar a { display: block; color: #cbd5e1; padding: 15px 25px; text-decoration: none; font-size: 14px; border-bottom: 1px solid #163b5d; }
+        .sidebar a:hover, .sidebar a.active { background: #163b5d; color: white; }
+        
+        /* Main Content */
+        .main-content { margin-left: 260px; width: calc(100% - 260px); padding: 40px; }
+        .container { max-width: 900px; margin: auto; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>Angels Valley</h2>
+        <a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('admin_notices') }}">📢 Manage Notices</a>
+        <a href="{{ url_for('admin_fees') }}" class="active">💰 Manage Fees</a>
+        <a href="{{ url_for('view_deposits') }}">📋 View Fee Deposits</a>
+        <a href="{{ url_for('admin_gallery') }}">🖼️ Manage Gallery</a>
+        <a href="{{ url_for('home') }}">🌐 View Website</a>
+        <a href="{{ url_for('admin_logout') }}" style="color: #fca5a5; margin-top: 20px; border-top: 1px dashed #3b82f6;">🚪 Logout</a>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            <h2 style="color: #1f4e79; font-weight: 700; margin-bottom: 30px;">💰 Manage Fee Structure</h2>
+
+            <div class="card">
+                <h4 style="color: #475569; margin-bottom: 20px;">Update/Add Fee for a Class</h4>
+                <form method="POST" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 15px; align-items: end;">
+                    <div>
+                        <label style="font-size: 13px; font-weight: 600;">Select Class</label>
+                        <select name="class_name" class="form-control" required style="padding: 10px; width: 100%; border: 1px solid #cbd5e1; border-radius: 6px;">
+                            {% for cls in ['Nursery', 'LKG', 'UKG', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8'] %}
+                                <option value="{{ cls }}">{{ cls }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 13px; font-weight: 600;">Monthly Fee (₹)</label>
+                        <input type="number" name="amount" class="form-control" placeholder="Amount" required style="padding: 10px; width: 100%; border: 1px solid #cbd5e1; border-radius: 6px;">
+                    </div>
+                    <button type="submit" style="padding: 10px 25px; background: #1f4e79; color: white; border: none; border-radius: 6px; cursor: pointer;">Save Fee</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f1f5f9; color: #1f4e79;">
+                            <th style="padding: 15px; text-align: left;">Class Name</th>
+                            <th style="padding: 15px; text-align: left;">Monthly Amount</th>
+                            <th style="padding: 15px; text-align: center;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fee in fees %}
+                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                            <td style="padding: 15px;">{{ fee.class_name }}</td>
+                            <td style="padding: 15px;">₹{{ fee.amount }}</td>
+                            <td style="padding: 15px; text-align: center;">
+                                <form action="{{ url_for('delete_fee', id=fee.id) }}" method="POST" onsubmit="return confirm('Are you sure?');">
+                                    <button type="submit" style="background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<div class="middle-layout">
+    <h3 style="color:#1f4e79; text-align:center;">Academic Progress Report (Class {{ result.class_name }})</h3>
+    <table class="result-table" style="width:100%; border-collapse: collapse; margin-top:20px;">
+        <tr style="background:#2d6a4f; color:white;">
+            <th style="padding:10px;">Subject</th><th style="padding:10px;">Marks</th>
+        </tr>
+        <tr><td style="padding:8px;">Hindi</td><td>{{ result.hindi }}</td></tr>
+        <tr><td style="padding:8px;">English</td><td>{{ result.english }}</td></tr>
+        <tr><td style="padding:8px;">Maths</td><td>{{ result.maths }}</td></tr>
+        <tr><td style="padding:8px;">EVS</td><td>{{ result.evs }}</td></tr>
+        <tr><td style="padding:8px;">Computer</td><td>{{ result.computer }}</td></tr>
+        <tr><td style="padding:8px;">Sanskrit</td><td>{{ result.sanskrit }}</td></tr>
+        <tr><td style="padding:8px;">GK</td><td>{{ result.gk }}</td></tr>
+        <tr><td style="padding:8px;">Drawing</td><td>{{ result.drawing }}</td></tr>
+        <tr><td style="padding:8px;">Eng. Grammar</td><td>{{ result.english_grammar }}</td></tr>
+        <tr><td style="padding:8px;">Conversation</td><td>{{ result.conversation }}</td></tr>
+        <tr><td style="padding:8px;">P.T.</td><td>{{ result.pt_marks }}</td></tr>
+        <tr><td style="padding:8px;">Activity</td><td>{{ result.activity }}</td></tr>
+        
+        <tr style="font-weight:bold; background:#d8f3dc;">
+            <td style="padding:10px;">GRAND TOTAL</td><td>{{ result.total_marks }}</td>
+        </tr>
+    </table>
+    <div style="margin-top:15px; text-align:center;">
+        <p><strong>Attendance:</strong> {{ result.attendance }} | 
+           <strong>Percentage:</strong> {{ "%.2f"|format(result.percentage) if result.percentage else '0.00' }}%</p>
+    </div>
+</div>

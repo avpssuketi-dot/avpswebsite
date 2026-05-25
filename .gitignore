@@ -1,0 +1,13 @@
+# Virtual environment (Yeh upload nahi hona chahiye)
+venv/
+
+# Python compiled files
+__pycache__/
+*.pyc
+
+# Database file (Ismein local data hota hai, isliye ise ignore karein)
+*.db
+*.sqlite3
+
+# Environment variables (Ismein secret keys hoti hain)
+.env

@@ -1,0 +1,48 @@
+<footer style="background:#002b66; color:white; text-align:center; padding:40px 20px; margin-top:50px;">
+    <p>&copy; 2026 Angels Valley Public School | All Rights Reserved</p>
+    <p>Developed with ❤️ for quality education</p>
+</footer>
+
+<!-- WhatsApp Button -->
+<a href="https://wa.me/918115430460" class="whatsapp" target="_blank">💬</a>
+
+<script>
+// Fee Modal Functions
+function openFeeModal() {
+    document.getElementById("feeModal").style.display = "block";
+}
+
+function closeFeeModal() {
+    document.getElementById("feeModal").style.display = "none";
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    let modal = document.getElementById("feeModal");
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}
+</script>
+
+<script>
+    function openModal() {
+        document.getElementById("admissionModal").style.display = "block";
+    }
+    function closeModal() {
+        document.getElementById("admissionModal").style.display = "none";
+    }
+
+    // Auto hide flash message
+    setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) alert.style.display = 'none';
+    }, 4000);
+
+    window.onclick = function(event) {
+        const modal = document.getElementById("admissionModal");
+        if (event.target == modal) modal.style.display = "none";
+    }
+</script>
+</body>
+</html>

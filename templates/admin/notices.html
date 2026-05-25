@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Notices - Angels Valley</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: #f4f6f9; color: #333; display: flex; }
+        
+        /* Sidebar Layout */
+        .sidebar { width: 260px; height: 100vh; background: #1f4e79; color: white; padding-top: 20px; position: fixed; left: 0; top: 0; }
+        .sidebar h2 { text-align: center; margin-bottom: 20px; font-size: 20px; color: #ffcc00; }
+        .sidebar a { display: block; color: #cbd5e1; padding: 15px 25px; text-decoration: none; font-size: 14px; border-bottom: 1px solid #255d8f; transition: all 0.3s; }
+        .sidebar a:hover, .sidebar a.active { background: #163b5d; color: white; }
+        
+        /* Main Content */
+        .main-content { margin-left: 260px; width: calc(100% - 260px); padding: 40px; min-height: 100vh; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; }
+        .header h1 { color: #1f4e79; font-size: 26px; }
+        
+        /* Layout Grid */
+        .panel-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px; }
+        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); height: fit-content; }
+        .card h2 { margin-bottom: 20px; font-size: 18px; color: #1f4e79; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
+        
+        .form-control { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 15px; }
+        .btn { width: 100%; padding: 12px; background: #1f4e79; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        
+        .notice-list { max-height: 70vh; overflow-y: auto; }
+        .notice-item { background: #f8fafc; padding: 18px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #10b981; border: 1px solid #e2e8f0; }
+        .notice-date { font-size: 11px; color: #94a3b8; display: block; margin-top: 8px; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>Angels Valley</h2>
+        <a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('admin_notices') }}" class="active">📢 Manage Notices</a>
+        <a href="{{ url_for('admin_fees') }}">💰 Manage Fees</a>
+        <a href="{{ url_for('view_deposits') }}">📋 View Fee Deposits</a>
+        <a href="{{ url_for('admin_gallery') }}">🖼️ Manage Gallery</a>
+        <a href="{{ url_for('home') }}">🌐 View Website</a>
+        <a href="{{ url_for('admin_logout') }}" style="color: #fca5a5; margin-top: 20px; border-top: 1px dashed #3b82f6;">🚪 Logout</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Notice Board Management</h1>
+        </div>
+
+        <div class="panel-grid">
+            <div class="card">
+                <h2>📢 Publish New Notice</h2>
+                <form action="{{ url_for('admin_notices') }}" method="POST">
+                    <label>Title</label>
+                    <input type="text" name="title" class="form-control" placeholder="Announcement Heading" required>
+                    <label>Description</label>
+                    <textarea name="content" class="form-control" style="min-height: 120px;" placeholder="Details here..." required></textarea>
+                    <button type="submit" class="btn">🚀 Post Announcement</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>📋 Active Notice History</h2>
+                <div class="notice-list">
+                    {% for notice in notices %}
+                        <div class="notice-item">
+                            <h4>{{ notice.title }}</h4>
+                            <p>{{ notice.content }}</p>
+                            <span class="notice-date">📅 {{ notice.date_posted.strftime('%d-%m-%Y') }}</span>
+                        </div>
+                    {% else %}
+                        <p style="text-align: center; padding: 20px;">No notices published yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

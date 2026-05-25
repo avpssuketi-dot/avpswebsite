@@ -1,0 +1,165 @@
+{% include "partials/header.html" %}
+
+<section style="padding: 120px 5% 80px; background: #f8f9fa;">
+    <div style="max-width: 850px; margin: auto;">
+        
+        <h1 style="text-align: center; color: #1f4e79; margin-bottom: 10px; font-weight: 700;">Online Admission Application</h1>
+        <p style="text-align: center; color: #d32f2f; font-weight: 600; margin-bottom: 40px; font-size: 15px;">
+            Academic Session 2026-27 | Nursery to Class 8th (English Medium)
+        </p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div style="padding: 15px; border-radius: 8px; margin-bottom: 25px; font-size: 15px; font-weight: 500;
+                                background-color: {% if category == 'success' %}#d1fae5{% else %}#fee2e2{% endif %};
+                                color: {% if category == 'success' %}#065f46{% else %}#991b1b{% endif %};
+                                border: 1px solid {% if category == 'success' %}#a7f3d0{% else %}#fca5a5{% endif %};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div style="background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+            <form action="{{ url_for('admission') }}" method="POST" id="admissionForm">
+                
+                <style>
+                    .form-group { margin-bottom: 22px; }
+                    .form-group label { display: block; font-size: 14px; font-weight: 500; color: #475569; margin-bottom: 8px; }
+                    .form-control { width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box; font-family: inherit; transition: border-color 0.2s; }
+                    .form-control:focus { outline: none; border-color: #1f4e79; }
+                    h3.section-title { color: #1f4e79; font-size: 18px; font-weight: 600; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin: 35px 0 20px; }
+                    h4.sub-title { color: #475569; font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+                </style>
+
+                <h3 class="section-title" style="margin-top: 0;">👦 Student Personal Details</h3>
+                
+                <div class="form-group">
+                    <label>Student's Full Name *</label>
+                    <input type="text" name="student_name" class="form-control" placeholder="Enter student's full name" required>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;" class="grid-2">
+                    <div class="form-group">
+                        <label>Father's Name *</label>
+                        <input type="text" name="father_name" class="form-control" placeholder="Father's name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Mother's Name *</label>
+                        <input type="text" name="mother_name" class="form-control" placeholder="Mother's name" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Full Address *</label>
+                    <textarea name="address" rows="3" class="form-control" placeholder="House No, Village, Post Office, District, Pin Code" required></textarea>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label>Mobile Number (For WhatsApp Updates) *</label>
+                        <input type="tel" name="mobile" class="form-control" placeholder="10-digit mobile number" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Student Aadhar Number</label>
+                        <input type="text" name="aadhar" class="form-control" placeholder="12 digit Aadhar Card No.">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
+                    <div class="form-group">
+                        <label>Religion</label>
+                        <input type="text" name="religion" class="form-control" placeholder="e.g. Hindu, Muslim">
+                    </div>
+                    <div class="form-group">
+                        <label>Caste</label>
+                        <input type="text" name="caste" class="form-control" placeholder="e.g. Yadav, Sharma, Sahu">
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select name="category" class="form-control">
+                            <option value="">Select Category</option>
+                            <option value="General">General</option>
+                            <option value="OBC">OBC</option>
+                            <option value="SC">SC</option>
+                            <option value="ST">ST</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>PEN (Permanent Edn. No)</label>
+                        <input type="text" name="pen_number" class="form-control" placeholder="PEN Number (If any)">
+                    </div>
+                </div>
+
+                <h3 class="section-title">📚 Academic Information</h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
+                    <div class="form-group">
+                        <label>Seeking Admission In Class *</label>
+                        <select name="admission_class" class="form-control" required>
+                            <option value="">Choose Class</option>
+                            <option value="Nursery">Nursery</option>
+                            <option value="LKG">LKG</option>
+                            <option value="UKG">UKG</option>
+                            <option value="Class 1">Class 1</option>
+                            <option value="Class 2">Class 2</option>
+                            <option value="Class 3">Class 3</option>
+                            <option value="Class 4">Class 4</option>
+                            <option value="Class 5">Class 5</option>
+                            <option value="Class 6">Class 6</option>
+                            <option value="Class 7">Class 7</option>
+                            <option value="Class 8">Class 8</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Previous Class Passed</label>
+                        <input type="text" name="last_class" class="form-control" placeholder="e.g. UKG (Leave blank if fresher)">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Last School Name & City</label>
+                    <input type="text" name="last_school" class="form-control" placeholder="Enter previous school name (if applicable)">
+                </div>
+
+                <h3 class="section-title">💼 Parents Profile</h3>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                    <div style="background: #f8fafc; padding: 18px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <h4 class="sub-title">Father's Background</h4>
+                        <div style="margin-bottom: 10px;">
+                            <input type="text" name="father_education" class="form-control" placeholder="Qualification (e.g. Graduate)">
+                        </div>
+                        <div>
+                            <input type="text" name="father_profession" class="form-control" placeholder="Occupation (e.g. Business, Farming)">
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f8fafc; padding: 18px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <h4 class="sub-title">Mother's Background</h4>
+                        <div style="margin-bottom: 10px;">
+                            <input type="text" name="mother_education" class="form-control" placeholder="Qualification (e.g. Inter)">
+                        </div>
+                        <div>
+                            <input type="text" name="mother_profession" class="form-control" placeholder="Occupation (e.g. Homemaker)">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin: 35px 0 25px; padding: 18px; background:#f0f8ff; border-radius:8px; font-size:14px; color: #1e3a8a; line-height: 1.5; border-left: 4px solid #1f4e79;">
+                    <label style="display: flex; gap: 10px; cursor: pointer; align-items: flex-start;">
+                        <input type="checkbox" required style="margin-top: 3px;"> 
+                        <span>I hereby declare that all the information given above is true, complete and correct to the best of my knowledge and belief.</span>
+                    </label>
+                </div>
+
+                <button type="submit" style="width:100%; padding:15px; font-size:16px; font-weight: 600; background: #1f4e79; color: white; border: none; border-radius: 6px; cursor: pointer; transition: background 0.2s;">
+                    🚀 Submit Application Form
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+{% include "partials/footer.html" %}

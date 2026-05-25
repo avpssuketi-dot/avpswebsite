@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Gallery - Admin Panel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+        body { display: flex; min-height: 100vh; background: #f4f6f9; }
+        
+        /* Sidebar Styling (Same as Dashboard) */
+        .sidebar { width: 260px; background: #1f4e79; color: white; height: 100vh; position: fixed; flex-shrink: 0; }
+        .sidebar h2 { padding: 20px; font-size: 20px; color: #ffcc00; text-align: center; }
+        .sidebar a { display: block; color: #cbd5e1; padding: 15px 25px; text-decoration: none; font-size: 14px; border-bottom: 1px solid #163b5d; }
+        .sidebar a:hover, .sidebar a.active { background: #163b5d; color: white; }
+        
+        /* Main Content */
+        .main-content { margin-left: 260px; width: calc(100% - 260px); padding: 40px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>Angels Valley</h2>
+        <a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('admin_notices') }}">📢 Manage Notices</a>
+        <a href="{{ url_for('admin_fees') }}">💰 Manage Fees</a>
+        <a href="{{ url_for('view_deposits') }}">📋 View Fee Deposits</a>
+        <a href="{{ url_for('admin_gallery') }}" class="active">🖼️ Manage Gallery</a>
+        <a href="{{ url_for('home') }}">🌐 View Website</a>
+        <a href="{{ url_for('admin_logout') }}" style="color: #fca5a5; margin-top: 20px; border-top: 1px dashed #3b82f6;">🚪 Logout</a>
+    </div>
+
+    <div class="main-content">
+        <h2 style="color: #1f4e79; margin-bottom: 20px;">🖼️ Manage Gallery</h2>
+
+        <div class="card">
+            <form action="{{ url_for('admin_gallery') }}" method="POST" enctype="multipart/form-data" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                <input type="file" name="file" accept="image/*" required style="padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                <input type="text" name="caption" placeholder="Caption..." required style="padding: 10px; flex: 1; border: 1px solid #ddd; border-radius: 6px;">
+                <select name="category" required style="padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    <option value="campus">🏫 Campus</option>
+                    <option value="sports">🏆 Sports</option>
+                    <option value="events">🎉 Events</option>
+                </select>
+                <button type="submit" style="padding: 10px 25px; background: #1f4e79; color: white; border: none; border-radius: 6px; cursor: pointer;">Upload</button>
+            </form>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px;">
+            {% for img in images %}
+            <div style="background: white; border-radius: 10px; padding: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;">
+                <img src="{{ url_for('static', filename='images/gallery/' + img.filename) }}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 6px;">
+                <p style="margin: 10px 0; font-size: 14px;">{{ img.caption }}</p>
+                <a href="{{ url_for('delete_gallery_image', id=img.id) }}" onclick="return confirm('Delete?')" style="color: #dc3545; font-size: 13px; font-weight: bold;">🗑️ Delete</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

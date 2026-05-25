@@ -1,0 +1,57 @@
+{% include "partials/header.html" %}
+
+<section style="padding: 80px 5%; text-align: center; min-height: 60vh; background: #f8fafc;">
+    <h2 class="section-title">Check Student Result</h2>
+    
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div style="color: #d32f2f; margin-bottom: 20px; font-weight: 600;">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="modern-card" style="max-width: 450px; margin: auto; padding: 40px;">
+        <form action="/view_result" method="POST">
+            <div style="margin-bottom: 20px;">
+                <select name="class_name" class="form-control-quick" required>
+                    <option value="">Select Your Class</option>
+                    <option value="Nursery">Nursery</option>
+                    <option value="LKG">LKG</option>
+                    <option value="UKG">UKG</option>
+                    {% for i in range(1, 9) %}
+                        <option value="{{i}}">Class {{i}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <input type="text" name="roll_no" placeholder="Enter Roll Number" class="form-control-quick" required>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <select name="term" class="form-control-quick" required>
+                    <option value="" disabled selected>Select Exam Term</option>
+                    <option value="1st Term">1st Term</option>
+                    <option value="Half Yearly">Half Yearly</option>
+                    <option value="Annual">Annual</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 25px;">
+                <input type="text" name="session" placeholder="Session (e.g. 2025-26)" class="form-control-quick" required>
+            </div>
+            
+            <button type="submit" class="btn-modern" style="width: 100%; border: none; cursor: pointer;">View Result</button>
+        </form>
+    </div>
+</section>
+
+<style>
+    .form-control-quick { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; margin-bottom: 10px; }
+    .modern-card { background: white; border-radius: 20px; padding: 30px; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .btn-modern { background: #1f4e79; color: white; padding: 15px 30px; border-radius: 50px; font-weight: 600; transition: 0.3s; }
+    .btn-modern:hover { background: #153655; transform: translateY(-3px); }
+</style>
+
+{% include "partials/footer.html" %}

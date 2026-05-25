@@ -1,0 +1,52 @@
+<div class="modern-card" style="max-width: 500px; margin: 20px auto; padding: 20px; background: #f8f9fa; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <h3 style="color:#1f4e79; text-align: center;">Upload Student Results</h3>
+    <hr>
+    <form method="POST" action="{{ url_for('upload_result') }}" enctype="multipart/form-data">
+        
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Select Class:</label>
+            <select name="class_name" required style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+                <option value="" disabled selected>-- Select Class --</option>
+                <optgroup label="Primary">
+                    <option value="Nursery">Nursery</option>
+                    <option value="LKG">LKG</option>
+                    <option value="UKG">UKG</option>
+                </optgroup>
+                <optgroup label="Classes 1-8">
+                    <option value="1">Class 1</option>
+                    <option value="2">Class 2</option>
+                    <option value="3">Class 3</option>
+                    <option value="4">Class 4</option>
+                    <option value="5">Class 5</option>
+                    <option value="6">Class 6</option>
+                    <option value="7">Class 7</option>
+                    <option value="8">Class 8</option>
+                </optgroup>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Select Exam Term:</label>
+            <select name="term" required style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+                <option value="1st Term">1st Term</option>
+                <option value="Half Yearly">Half Yearly</option>
+                <option value="Annual">Annual</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Academic Session:</label>
+            <input type="text" name="session" placeholder="e.g. 2025-26" required style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Select Excel File (.xlsm/.xlsx):</label>
+            <input type="file" name="file" accept=".xlsx, .xls, .xlsm" required style="width: 100%; padding: 10px; border: 1px solid #ccc; background: white;">
+            <small style="color: #666;">* Ensure headers match the template.</small>
+        </div>
+
+        <button type="submit" style="width: 100%; padding: 12px; background: #1f4e79; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
+            Upload Results
+        </button>
+    </form>
+</div>

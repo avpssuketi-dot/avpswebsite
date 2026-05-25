@@ -1,0 +1,82 @@
+{% include "partials/header.html" %}
+
+<section style="padding: 80px 5% 100px; background: linear-gradient(135deg, #f0f4ff 0%, #e6f0ff 100%);">
+    <div style="max-width: 1300px; margin: auto;">
+        
+        <!-- Top Banner -->
+        <div style="text-align: center; margin-bottom: 60px;">
+            <h1 style="font-size: 48px; color: #004aad; margin-bottom: 10px;">Prospectus 2026-27</h1>
+            <p style="font-size: 22px; color: #333;">Angels Valley Public School</p>
+            <p style="font-size: 18px; color: #555;">Excellence in Education | Discipline | Character Building</p>
+        </div>
+
+        <!-- Founder & Director Message -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); gap: 40px; margin-bottom: 80px;">
+            
+            <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1);">
+                <h3 style="color:#004aad; margin-bottom: 20px;">🌟 Founder's Message</h3>
+                <p style="font-size: 17px; line-height: 1.9; font-style: italic;">
+                    "Education is the most powerful weapon to change the world. We are not just running a school, 
+                    we are building the future of our society. Our dream is to create responsible, confident and 
+                    value-driven citizens."
+                </p>
+                <p style="margin-top: 25px; font-weight: 600;">— Shri Raj Karan Singh<br><small>Founder</small></p>
+            </div>
+
+            <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1);">
+                <h3 style="color:#004aad; margin-bottom: 20px;">🎯 Director's Message</h3>
+                <p style="font-size: 17px; line-height: 1.9; font-style: italic;">
+                    "Every child is unique. Our mission is to provide an environment where every student can discover 
+                    their true potential. We focus equally on academic excellence and character development."
+                </p>
+                <p style="margin-top: 25px; font-weight: 600;">— Mr. Ashish Singh<br><small>Director</small></p>
+            </div>
+        </div>
+
+        <!-- Vision & Mission -->
+        <div style="background: white; padding: 50px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); margin-bottom: 70px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 50px; text-align: center;">
+                <div>
+                    <h2 style="color:#004aad;">Our Vision</h2>
+                    <p style="font-size: 18px; line-height: 1.8;">
+                        To nurture confident, disciplined and knowledgeable young minds who become leaders 
+                        and responsible citizens of tomorrow.
+                    </p>
+                </div>
+                <div>
+                    <h2 style="color:#004aad;">Our Mission</h2>
+                    <p style="font-size: 18px; line-height: 1.8;">
+                        To provide world-class education with modern teaching techniques while preserving 
+                        Indian values and culture.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activities -->
+        <h2 style="text-align: center; color: #004aad; margin-bottom: 40px;">Co-Curricular Activities</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px;">
+            <div style="background:white; padding:30px; border-radius:15px; text-align:center; box-shadow:0 8px 20px rgba(0,0,0,0.08);">
+                <h3>🏏 Sports</h3>
+                <p>Cricket, Football, Volleyball, Athletics, Yoga & Karate</p>
+            </div>
+            <div style="background:white; padding:30px; border-radius:15px; text-align:center; box-shadow:0 8px 20px rgba(0,0,0,0.08);">
+                <h3>🎨 Cultural</h3>
+                <p>Dance, Music, Drama, Art & Craft, Annual Day</p>
+            </div>
+            <div style="background:white; padding:30px; border-radius:15px; text-align:center; box-shadow:0 8px 20px rgba(0,0,0,0.08);">
+                <h3>🧠 Academic Clubs</h3>
+                <p>Science Club, Quiz Club, Debate Club, Eco Club</p>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div style="text-align: center; margin-top: 80px;">
+            <a href="{{ url_for('download_admission_form') }}" class="btn-main" style="font-size: 20px; padding: 20px 60px;">
+                Download Admission Form 2026-27
+            </a>
+        </div>
+    </div>
+</section>
+
+{% include "partials/footer.html" %}

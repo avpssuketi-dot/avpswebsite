@@ -1,0 +1,36 @@
+{% include "partials/header.html" %}
+
+<section style="padding: 120px 5% 80px; background: #f8f9fa;">
+    <div style="max-width: 800px; margin: auto;">
+        <h1 style="text-align: center; color: #004aad; margin-bottom: 40px;">Transfer Certificate (TC) Application</h1>
+        
+        <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <form action="#" method="POST">
+                <div class="form-group">
+                    <label>Student's Full Name *</label>
+                    <input type="text" required>
+                </div>
+                <div class="form-group">
+                    <label>Father's Name *</label>
+                    <input type="text" required>
+                </div>
+                <div class="form-group">
+                    <label>Class & Section *</label>
+                    <input type="text" required placeholder="e.g. Class 5 - A">
+                </div>
+                <div class="form-group">
+                    <label>Reason for TC *</label>
+                    <textarea rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Mobile Number *</label>
+                    <input type="tel" required>
+                </div>
+                
+                <button type="submit" class="btn-main" style="width:100%; margin-top:20px;">Submit TC Application</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+{% include "partials/footer.html" %}

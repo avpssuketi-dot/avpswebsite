@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fee Deposits - Admin Panel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: #f4f6f9; display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar { width: 260px; background: #1f4e79; color: white; padding-top: 20px; position: fixed; height: 100vh; }
+        .sidebar h2 { text-align: center; margin-bottom: 20px; font-size: 20px; color: #ffcc00; }
+        .sidebar a { display: block; color: #cbd5e1; padding: 15px 20px; text-decoration: none; border-bottom: 1px solid #1e3a5a; }
+        .sidebar a:hover { background: #163b5d; color: white; }
+        
+        /* Main Content */
+        .main-content { margin-left: 260px; width: calc(100% - 260px); padding: 30px; }
+        .total-box { background: #10b981; color: white; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; display: inline-block; }
+        
+        /* Fixed Table Layout */
+        .table-container { width: 100%; overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; } /* min-width ensures it doesn't squish */
+        th { background: #1f4e79; color: white; padding: 12px; font-size: 13px; }
+        td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; font-size: 13px; }
+        
+        /* Buttons */
+        .btn-pdf { background: #28a745; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 12px; display: inline-block; }
+        .btn-wa { background: #25d366; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 12px; margin-left: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>Admin Panel</h2>
+        <a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('admin_notices') }}">📢 Manage Notices</a>
+        <a href="{{ url_for('admin_fees') }}">💰 Manage Fees</a>
+        <a href="{{ url_for('view_deposits') }}" style="background: #163b5d; color: white;">📋 View Fee Deposits</a>
+        <a href="{{ url_for('admin_gallery') }}">🖼️ Manage Gallery</a>
+        <a href="{{ url_for('home') }}">🌐 View Website</a>
+        <a href="{{ url_for('admin_logout') }}" style="color: #fca5a5; margin-top: 20px; border-top: 1px dashed #3b82f6;">🚪 Logout</a>
+    </div>
+
+    <div class="main-content">
+        <h2 style="color: #1f4e79; margin-bottom: 20px;">💰 Fee Deposit Records</h2>
+        
+        <div class="total-box">
+            <strong>Total Collection: ₹{{ total }}</strong>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search by Name..." 
+                   style="padding: 10px; width: 100%; max-width: 300px; border: 1px solid #ddd; border-radius: 5px;">
+        </div>
+
+        <div class="table-container">
+            <table id="depositTable">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Father</th>
+                        <th>Class</th>
+                        <th>Session</th> 
+                        <th>Month</th>
+                        <th>Amount</th>
+                        <th>TXN ID</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in deposits %}
+                    <tr>
+                        <td>{{ d.student_name }}</td>
+                        <td>{{ d.father_name }}</td>
+                        <td>{{ d.class_section }}</td>
+                        <td>{{ d.academic_session }}</td> 
+                        <td>{{ d.month }}</td>
+                        <td style="font-weight:bold;">₹{{ d.amount }}</td>
+                        <td>{{ d.transaction_id }}</td>
+                        <td>{{ d.date_submitted.strftime('%d-%m-%Y') }}</td>
+                        <td style="white-space: nowrap;">
+                            <a href="{{ url_for('download_receipt', deposit_id=d.id) }}" class="btn-pdf">PDF</a>
+                            <a href="{{ url_for('send_whatsapp', deposit_id=d.id) }}" target="_blank" class="btn-wa">WhatsApp</a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" style="padding: 20px; color: #777;">No fee deposits found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<script>
+function searchTable() {
+    var input = document.getElementById("searchInput");
+    var filter = input.value.toUpperCase();
+    var table = document.getElementById("depositTable");
+    var tr = table.getElementsByTagName("tr");
+    for (var i = 1; i < tr.length; i++) {
+        var td = tr[i].getElementsByTagName("td")[0];
+        if (td) {
+            tr[i].style.display = (td.textContent || td.innerText).toUpperCase().indexOf(filter) > -1 ? "" : "none";
+        }
+    }
+}
+</script>
+</body>
+</html>
