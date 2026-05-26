@@ -6,8 +6,10 @@ db = SQLAlchemy()
 
 class Result(db.Model):
     __tablename__ = 'results'
+    # UniqueConstraints ko ek hi tuple mein merge kiya gaya hai
     __table_args__ = (
-        db.UniqueConstraint('admission_no', 'class_name', 'exam_term', 'session', name='_student_result_uc'),
+        db.UniqueConstraint('admission_no', 'class_name', 'exam_term', 'session', name='_admission_unique'),
+        db.UniqueConstraint('class_name', 'roll_no', 'exam_term', 'session', name='_student_result_uc'),
         {'extend_existing': True}
     )
     
@@ -20,7 +22,7 @@ class Result(db.Model):
     session = db.Column(db.String(20), nullable=True)
     exam_term = db.Column(db.String(20), nullable=True)
 
-    # Subject Marks as String to support 'AA'
+    # Subject Marks
     hindi = db.Column(db.String(10), default="0")
     english = db.Column(db.String(10), default="0")
     maths = db.Column(db.String(10), default="0")
@@ -37,14 +39,11 @@ class Result(db.Model):
     pt_marks = db.Column(db.String(10), default="0")
     activity = db.Column(db.String(10), default="0")
     
-    total_marks = db.Column(db.Float, default=0.0) # Total Float hi rahega
+    total_marks = db.Column(db.Float, default=0.0)
     percentage = db.Column(db.Float, default=0.0)
     grade = db.Column(db.String(5), nullable=True)
     attendance = db.Column(db.String(20), nullable=True)
     rank = db.Column(db.String(10), nullable=True)
-    __table_args__ = (
-        db.UniqueConstraint('class_name', 'roll_no', 'exam_term', 'session', name='_student_result_uc'),
-    )
 
 class Admission(db.Model):
     __tablename__ = 'admission'
@@ -115,3 +114,10 @@ class FeeDeposit(db.Model):
     amount = db.Column(db.Float, nullable=False)
     transaction_id = db.Column(db.String(100))
     date_submitted = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+class User(db.Model):
+    __tablename__ = 'users'
+    __table_args__ = {'extend_existing': True}
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password = db.Column(db.String(100), nullable=False)
