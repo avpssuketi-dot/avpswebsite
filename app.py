@@ -11,6 +11,10 @@ from functools import wraps
 from werkzeug.utils import secure_filename
 from sqlalchemy import func
 
+# Cloudinary Import (Isse add karna zaroori hai!)
+import cloudinary
+import cloudinary.uploader
+
 # ReportLab Imports
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
@@ -18,6 +22,7 @@ from reportlab.lib import colors
 from reportlab.lib.units import cm
 from reportlab.platypus import Table, TableStyle, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
+
 
 # ========================= App & DB Setup =========================
 from models import db # Models se 'db' instance import karein
@@ -27,9 +32,17 @@ app.secret_key = 'kuch_bhi_secret_string_yahan_likho'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///school.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# Cloudinary Configuration
+cloudinary.config(
+    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME', 'djjvsvvy8'),
+    api_key = os.environ.get('CLOUDINARY_API_KEY', '465926195419728'),
+    api_secret = os.environ.get('CLOUDINARY_API_SECRET, ') # Ise Render Environment Variables mein set karein
+)
+
 # 1. DB aur Migrate ko App ke saath bind karein
 db.init_app(app)
-migrate = Migrate(app, db) 
+migrate = Migrate(app, db)
+
 
 # 2. Models yahan import karein (User ko zaroor add karein)
 from models import Result, Admission, Inquiry, Notice, GalleryImage, Fee, FeeDeposit, User
