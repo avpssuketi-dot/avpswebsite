@@ -11,7 +11,12 @@
 <body>
 
 <header>
-    <div class="logo">Angels Valley</div>
+    <div class="logo-container">
+        <a href="{{ url_for('home') }}">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="School Logo" class="site-logo">
+        </a>
+    </div>
+
     <nav>
         <ul>
             <li><a href="{{ url_for('home') }}">Home</a></li>
@@ -78,7 +83,6 @@
                 {% endfor %}
             </tbody>
         </table>
-
         <p style="background:#fffbe6; padding:15px; border-radius:8px; font-size:15px;">
             <strong>Note:</strong> Plz confirm other fee from school admin.
         </p>

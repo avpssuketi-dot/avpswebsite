@@ -20,7 +20,7 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 18px 5%;
+    padding: 10px 5%;
     position: fixed;
     top: 0;
     width: 100%;
@@ -28,14 +28,24 @@ header {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-.logo {
-    color: white;
-    font-size: 28px;
-    font-weight: 700;
-    font-family: 'Playfair Display', serif;
-    letter-spacing: 1px;
+/* Logo Image Styling */
+.logo-container {
+    display: flex;
+    align-items: center;
 }
 
+.site-logo {
+    height: 60px; /* Logo ki height yahan se adjust karein */
+    width: auto;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.site-logo:hover {
+    transform: scale(1.05);
+}
+
+/* Nav Styling */
 nav ul {
     display: flex;
     list-style: none;
@@ -90,12 +100,12 @@ nav a:hover, .dropbtn:hover {
     padding-left: 28px;
 }
 
-/* Better Hover Experience */
 .dropdown:hover .dropdown-content {
     display: block;
 }
 
-/* ==================== HERO ==================== */
+/* ==================== HERO, MODAL, ALERT, etc. ==================== */
+/* (Baki ka sara code niche waisa hi rahega) */
 .hero {
     min-height: 100vh;
     display: flex;
@@ -141,7 +151,6 @@ nav a:hover, .dropbtn:hover {
     box-shadow: 0 15px 30px rgba(255, 204, 0, 0.4);
 }
 
-/* MODAL */
 .modal {
     display: none;
     position: fixed;
@@ -178,95 +187,20 @@ nav a:hover, .dropbtn:hover {
 
 .close-btn:hover { color: #e74c3c; }
 
-/* Form Styling */
-.form-group {
-    margin-bottom: 18px;
-    text-align: left;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 500;
-    color: #004aad;
-}
-
+.form-group { margin-bottom: 18px; text-align: left; }
+.form-group label { display: block; margin-bottom: 6px; font-weight: 500; color: #004aad; }
 .form-group input, .form-group select, .form-group textarea {
-    width: 100%;
-    padding: 14px;
-    border: 1.5px solid #ddd;
-    border-radius: 10px;
-    font-size: 16px;
+    width: 100%; padding: 14px; border: 1.5px solid #ddd; border-radius: 10px; font-size: 16px;
 }
 
-.form-group input:focus, .form-group textarea:focus {
-    outline: none;
-    border-color: #004aad;
-    box-shadow: 0 0 0 3px rgba(0, 74, 173, 0.1);
-}
-
-/* Notice Board */
-.notice-container {
-    background: #fffbe6;
-    border-left: 6px solid #ffcc00;
-    padding: 20px;
-    margin: 20px 0;
-    border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-}
-
-/* Alert */
-.alert {
-    padding: 16px 25px;
-    background: #2ecc71;
-    color: white;
-    position: fixed;
-    top: 90px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 3000;
-    border-radius: 12px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-}
-
-/* WhatsApp */
 .whatsapp {
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    background: #25D366;
-    color: white;
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    border-radius: 50%;
-    box-shadow: 0 5px 20px rgba(37, 211, 102, 0.5);
-    z-index: 999;
-    text-decoration: none;
+    position: fixed; bottom: 25px; right: 25px; background: #25D366; color: white;
+    width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+    font-size: 28px; border-radius: 50%; box-shadow: 0 5px 20px rgba(37, 211, 102, 0.5);
+    z-index: 999; text-decoration: none;
 }
 
-.whatsapp:hover {
-    transform: scale(1.1);
-}
-
-/* Responsive */
 @media (max-width: 768px) {
-    header {
-        padding: 15px 5%;
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    nav ul {
-        gap: 15px;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    
-    .hero {
-        min-height: 85vh;
-    }
+    header { padding: 15px 5%; flex-direction: column; gap: 15px; }
+    nav ul { gap: 15px; flex-wrap: wrap; justify-content: center; }
 }
