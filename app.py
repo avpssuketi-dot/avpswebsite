@@ -57,7 +57,7 @@ db.init_app(app)
 migrate = Migrate(app, db)
 
 # 3. Models import karein
-from models import Result, Admission, Inquiry, Notice, GalleryImage, Fee, FeeDeposit, User, Video
+from models import Result, Admission, Inquiry, Notice, GalleryImage, Fee, FeeDeposit, User, Video, DownloadableDoc
 
 # 4. Tables Create karein aur Admin setup
 with app.app_context():
