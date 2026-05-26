@@ -29,15 +29,22 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # 1. DB aur Migrate ko App ke saath bind karein
 db.init_app(app)
-migrate = Migrate(app, db) # Migrate ko yahan initialize karein
+migrate = Migrate(app, db) 
 
-# 2. Models yahan import karein (taaki circular import na ho)
-from models import Result, Admission, Inquiry, Notice, GalleryImage, Fee, FeeDeposit
+# 2. Models yahan import karein (User ko zaroor add karein)
+from models import Result, Admission, Inquiry, Notice, GalleryImage, Fee, FeeDeposit, User
 
-# 3. Tables Create karein (Migration ke sath ye optional ho jata hai, 
-# lekin 'flask db upgrade' command use karna zyada behtar hai)
+# 3. Tables Create karein
 with app.app_context():
     db.create_all()
+    
+    # Admin User Initialization (Ise yahan rakhein taaki server start hote hi user ban jaye)
+    admin = User.query.filter_by(username='admin').first()
+    if not admin:
+        new_admin = User(username='admin', password='123') 
+        db.session.add(new_admin)
+        db.session.commit()
+        print("--- Admin user created successfully ---")
 
 # ========================= SECURITY SHIELD =========================
 def login_required(f):
