@@ -295,19 +295,20 @@ def admin_fees():
 
 @app.route("/admin/login", methods=['GET', 'POST'])
 def admin_login():
-    if 'logged_in' in session:
+    if session.get('logged_in'):
         return redirect(url_for('admin_dashboard'))
         
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
         
-        # User model ko check karein (Assume 'User' model hai aapka)
-        # Agar aapne model nahi banaya hai, toh ye query chalegi:
-        from models import User # Yahan apna User model import karein
-        user = User.query.filter_by(username=username, password=password).first()
+        from models import User
+        # 1. Pehle sirf username se user dhoondein
+        user = User.query.filter_by(username=username).first()
         
-        if user:
+        # 2. Phir password verify karein (strip() use karein taaki spaces na aayein)
+        if user and user.password.strip() == password.strip():
+            session.clear() # Purane corrupted sessions saaf karein
             session['logged_in'] = True
             session.permanent = True
             return redirect(url_for('admin_dashboard'))
