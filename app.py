@@ -295,14 +295,10 @@ def admin_login():
         username = request.form.get('username')
         password = request.form.get('password')
         
-        # Database connection
-        conn = sqlite3.connect('database.db')
-        cursor = conn.cursor()
-        
-        # Check database for credentials
-        cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
-        user = cursor.fetchone()
-        conn.close()
+        # User model ko check karein (Assume 'User' model hai aapka)
+        # Agar aapne model nahi banaya hai, toh ye query chalegi:
+        from models import User # Yahan apna User model import karein
+        user = User.query.filter_by(username=username, password=password).first()
         
         if user:
             session['logged_in'] = True
@@ -314,32 +310,22 @@ def admin_login():
             
     return render_template("admin/login.html")
 
+
 @app.route('/change-password', methods=['GET', 'POST'])
+@login_required # Aapka pehle se bana security decorator
 def change_password():
-    # Login route se match karne wala session check
-    if 'logged_in' not in session:
-        return "Access Denied", 403
-    
     if request.method == 'POST':
         new_password = request.form.get('new_password')
         
-        conn = sqlite3.connect('database.db')
-        cursor = conn.cursor()
-        
-        # Admin ka password update karein
-        cursor.execute("UPDATE users SET password = ? WHERE username = 'admin'", (new_password,))
-        conn.commit()
-        conn.close()
-        
-        return "Password successfully updated! <a href='/admin/dashboard'>Go Back to Dashboard</a>"
-        
-    return '''
-        <h3>Change Admin Password</h3>
-        <form method="POST">
-            <input type="password" name="new_password" placeholder="New Password" required>
-            <button type="submit">Update Password</button>
-        </form>
-    '''
+        from models import User
+        # Admin record update karein
+        admin = User.query.filter_by(username='admin').first()
+        if admin:
+            admin.password = new_password
+            db.session.commit()
+            return "Password updated successfully! <a href='/admin/dashboard'>Back</a>"
+            
+    return render_template("admin/change_password.html")
 
 
 
