@@ -73,11 +73,15 @@ with app.app_context():
 
 
 # ========================= SECURITY SHIELD =========================
+from functools import wraps
+from flask import session, redirect, url_for, flash
+
+# 1. Decorator ko define karein
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'logged_in' not in session:
-            flash("Please login first to access the Admin Panel.", "danger")
+            flash("Please login first.", "danger")
             return redirect(url_for('admin_login'))
         return f(*args, **kwargs)
     return decorated_function
@@ -156,8 +160,9 @@ class FeeDeposit(db.Model):
 def inject_global_data():
     return {
         'all_fees': Fee.query.all(),
-        'first_term': DownloadableDoc.query.filter_by(category='first_term').first(),
-        'half_yearly': DownloadableDoc.query.filter_by(category='half_yearly').first(),
+        # Yahan se documents fetch ho rahe hain aur poori website par available hain
+        'first_term': DownloadableDoc.query.filter_by(category='first_term_exam').first(),
+        'half_yearly': DownloadableDoc.query.filter_by(category='half_yearly_exam').first(),
         'annual_exam': DownloadableDoc.query.filter_by(category='annual_exam').first(),
         'holiday_list': DownloadableDoc.query.filter_by(category='holiday').first(),
         'admission_form': DownloadableDoc.query.filter_by(category='admission_form').first()
@@ -166,16 +171,12 @@ def inject_global_data():
 # ========================= MAIN WEBSITE ROUTES =========================
 @app.route("/")
 def home():
-    # 1. Notices fetch karein
+    # Ab home() mein sirf wahi data fetch karein jo specific homepage ke liye hai
     notices = Notice.query.order_by(Notice.date_posted.desc()).limit(5).all()
-    
-    # 2. Videos fetch karein
     videos = Video.query.all() 
-    
-    # 3. Gallery Images fetch karein (Yeh zaroori hai)
     images = GalleryImage.query.all()
     
-    # 4. Teeno ko ek saath template mein pass karein
+    # Documents pass karne ki zaroorat nahi, context_processor handle kar lega
     return render_template("index.html", notices=notices, videos=videos, images=images)
 
 
@@ -423,42 +424,50 @@ def admin_login():
         return redirect(url_for('admin_dashboard'))
         
     if request.method == 'POST':
+        # Debugging: terminal mein dekhein kya mil raha hai
         username = request.form.get('username')
         password = request.form.get('password')
-        
+        print(f"DEBUG: Input Username: '{username}', Input Password: '{password}'")
+
         from models import User
-        # 1. Pehle sirf username se user dhoondein
         user = User.query.filter_by(username=username).first()
         
-        # 2. Phir password verify karein (strip() use karein taaki spaces na aayein)
-        if user and user.password.strip() == password.strip():
-            session.clear() # Purane corrupted sessions saaf karein
-            session['logged_in'] = True
-            session.permanent = True
-            return redirect(url_for('admin_dashboard'))
+        if user:
+            print(f"DEBUG: Found user in DB: {user.username}, Password in DB: {user.password}")
+            if user.password.strip() == password.strip():
+                print("DEBUG: Password matched successfully!")
+                session.clear() 
+                session['logged_in'] = True
+                return redirect(url_for('admin_dashboard'))
+            else:
+                print("DEBUG: Password mismatch!")
         else:
-            flash("Invalid Username or Password!", "danger")
-            return redirect(url_for('admin_login'))
+            print("DEBUG: User not found in DB!")
+            
+        flash("Invalid Credentials!", "danger")
+        return render_template("admin/login.html")
             
     return render_template("admin/login.html")
 
 
 @app.route('/change-password', methods=['GET', 'POST'])
-@login_required # Aapka pehle se bana security decorator
+@login_required 
 def change_password():
     if request.method == 'POST':
         new_password = request.form.get('new_password')
         
-        from models import User
-        # Admin record update karein
+        # Database se 'admin' user dhoondein
         admin = User.query.filter_by(username='admin').first()
-        if admin:
-            admin.password = new_password
+        
+        if admin and new_password:
+            admin.password = new_password.strip()
             db.session.commit()
-            return "Password updated successfully! <a href='/admin/dashboard'>Back</a>"
+            flash("Password updated successfully!", "success")
+            return redirect(url_for('admin_dashboard'))
+        else:
+            flash("Error updating password!", "danger")
             
     return render_template("admin/change_password.html")
-
 
 
 @app.route("/admin/logout")
@@ -1268,43 +1277,37 @@ def admin_docs():
         file = request.files.get('file')
         
         if file and title and category:
-            # File ka naam secure karein
             filename = secure_filename(file.filename)
             save_path = os.path.join('static', 'uploads', 'docs')
+            if not os.path.exists(save_path): os.makedirs(save_path)
             
-            # Folder check karein
-            if not os.path.exists(save_path):
-                os.makedirs(save_path)
-            
-            # File save karein
-            file.save(os.path.join(save_path, filename))
-            
-            # Database mein purani file (agar ho) toh delete karke nayi save karein
+            # 1. Purani file delete karein
             old_doc = DownloadableDoc.query.filter_by(category=category).first()
             if old_doc:
-                # Purani file folder se delete karein
                 old_file_path = os.path.join(save_path, old_doc.filename)
                 if os.path.exists(old_file_path):
                     os.remove(old_file_path)
+                # Database se nikal dein
                 db.session.delete(old_doc)
+                db.session.flush() # Transaction clear karein
             
-            # Naya record add karein
+            # 2. Naya record save karein
+            file.save(os.path.join(save_path, filename))
             new_doc = DownloadableDoc(title=title, category=category, filename=filename)
             db.session.add(new_doc)
             db.session.commit()
             
             flash(f"{category.replace('_', ' ').title()} updated successfully!", "success")
-            # Refresh par resubmission rokne ke liye redirect
             return redirect(url_for('admin_docs'))
             
     return render_template("admin/documents.html")
 
 
-
 # ========================= APP RUNNER =========================
 if __name__ == "__main__":
-    # Render mein app.run() ki zaroorat nahi hai, Gunicorn ise handle karega.
-    # Sirf tables create karne ke liye ye block rakhein:
     with app.app_context():
         db.create_all()
         print("✅ Database tables initialized!")
+    
+    # Localhost par dev server chalaane ke liye
+    app.run(debug=True)

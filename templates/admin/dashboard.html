@@ -7,19 +7,30 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body { display: flex; min-height: 100vh; background: #f4f6f9; }
         
-        /* Sidebar Scrollable Logic */
-        .sidebar { width: 260px; background: #1e3a5a; color: white; height: 100vh; position: fixed; flex-shrink: 0; overflow-y: auto; }
+        /* Sidebar Styling */
+        .sidebar { 
+            width: 260px; background: #1e3a5a; color: white; height: 100vh; 
+            position: fixed; left: 0; top: 0; flex-shrink: 0; 
+            overflow-y: auto; z-index: 1000;
+        }
         .sidebar::-webkit-scrollbar { width: 6px; }
-        .sidebar::-webkit-scrollbar-thumb { background: #163b5d; border-radius: 10px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
         
         .sidebar h2 { padding: 20px; font-size: 18px; color: #ffcc00; text-align: center; }
         .sidebar a { display: block; color: #cbd5e1; padding: 15px 20px; text-decoration: none; border-bottom: 1px solid #163b5d; transition: 0.3s; }
         .sidebar a:hover { background: #163b5d; color: white; }
         
-        /* Grouped Menu Style */
+        /* Logout Sticky at bottom */
+        .logout-btn { 
+            position: sticky; bottom: 0; background: #163b5d; 
+            color: #fca5a5 !important; border-top: 1px dashed #3b82f6;
+        }
+        
+        /* Grouped Menu */
         .group-title { padding: 15px 20px 5px 20px; font-size: 12px; color: #94a3b8; text-transform: uppercase; display: block; }
         .media-menu { background: #163b5d; padding-left: 30px !important; font-size: 14px; }
         
+        /* Main Content */
         .main-content { margin-left: 260px; width: calc(100% - 260px); padding: 30px; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .header h1 { color: #1e3a5a; }
@@ -29,10 +40,11 @@
         .card h3 { font-size: 14px; color: #666; margin-bottom: 10px; }
         .card p { font-size: 24px; font-weight: bold; color: #1e3a5a; }
         
-        .table-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .table-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         td, th { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
-        .btn { background: #2563eb; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px; font-size: 14px; display: inline-block; border: none; cursor: pointer; }
+        
+        .btn { background: #2563eb; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px; border: none; cursor: pointer; }
         .btn-danger { background: #dc2626; }
     </style>
 </head>
@@ -43,7 +55,7 @@
     <a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a>
     <a href="{{ url_for('admin_notices') }}">📢 Manage Notices</a>
     
-    <div style="background: #163b5d; padding-bottom: 10px;">
+    <div>
         <span class="group-title">Downloads & Media</span>
         <a href="{{ url_for('admin_docs') }}" class="media-menu">📄 Manage Downloads</a>
         <a href="{{ url_for('admin_gallery') }}" class="media-menu">🖼️ Manage Gallery</a>
@@ -56,7 +68,7 @@
     <a href="{{ url_for('manual_sync') }}" style="color: #f59e0b;">🔄 Sync ERP Data</a>
     <a href="{{ url_for('home') }}">🌐 View Website</a>
     <a href="{{ url_for('change_password') }}">🔑 Change Password</a>
-    <a href="{{ url_for('admin_logout') }}" style="color: #fca5a5; margin-top: 20px; border-top: 1px dashed #3b82f6;">🚪 Logout</a>
+    <a href="{{ url_for('admin_logout') }}" class="logout-btn">🚪 Logout</a>
 </div>
 
 <div class="main-content">
@@ -77,7 +89,7 @@
         {% include 'admin_upload.html' %}
         
         <h3 style="margin-top: 30px;">Uploaded Results ({{ results|length }})</h3>
-        <form action="{{ url_for('delete_all_results') }}" method="POST">
+        <form action="{{ url_for('delete_all_results') }}" method="POST" style="margin: 10px 0;">
             <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete All Results</button>
         </form>
         

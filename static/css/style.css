@@ -1,11 +1,7 @@
 /* Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap');
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
     font-family: 'Poppins', sans-serif;
@@ -14,7 +10,7 @@ body {
     overflow-x: hidden;
 }
 
-/* ==================== HEADER ==================== */
+/* ==================== HEADER & LOGO ==================== */
 header {
     background: linear-gradient(135deg, #004aad 0%, #002b66 100%);
     display: flex;
@@ -26,86 +22,66 @@ header {
     width: 100%;
     z-index: 1000;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    height: 80px;
 }
 
-/* Logo Image Styling */
-.logo-container {
-    display: flex;
-    align-items: center;
-}
+.logo-container { display: flex; align-items: center; }
 
 .site-logo {
-    height: 60px; /* Logo ki height yahan se adjust karein */
+    height: 60px;
     width: auto;
     display: block;
     transition: transform 0.3s ease;
 }
 
-.site-logo:hover {
-    transform: scale(1.05);
-}
+.site-logo:hover { transform: scale(1.05); }
 
-/* Nav Styling */
-nav ul {
-    display: flex;
-    list-style: none;
-    gap: 28px;
-    margin: 0;
-    padding: 0;
-}
+/* ==================== NAV STYLING ==================== */
+nav ul { display: flex; list-style: none; gap: 20px; align-items: center; }
 
 nav a, .dropbtn {
-    color: rgba(255, 255, 255, 0.95);
+    color: white;
     text-decoration: none;
     font-weight: 500;
-    font-size: 16px;
+    font-size: 15px;
+    padding: 10px 5px;
+    cursor: pointer;
     transition: 0.3s;
-    padding: 8px 0;
+    border-radius: 4px;
 }
 
-nav a:hover, .dropbtn:hover {
-    color: #ffcc00;
-}
+nav a:hover, .dropbtn:hover { color: #ffcc00; background: rgba(255,255,255,0.1); }
 
 /* ==================== DROPDOWN ==================== */
-.dropdown {
-    position: relative;
-    display: inline-block;
-}
+.dropdown { position: relative; }
 
 .dropdown-content {
     display: none;
     position: absolute;
     background-color: white;
-    min-width: 240px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-    border-radius: 10px;
+    min-width: 220px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    border-radius: 8px;
     z-index: 1001;
-    margin-top: 10px;
-    padding: 8px 0;
     top: 100%;
+    left: 0;
+    padding: 8px 0;
+    margin-top: 5px;
 }
 
 .dropdown-content a {
     color: #333;
-    padding: 13px 20px;
-    text-decoration: none;
+    padding: 10px 20px;
     display: block;
-    transition: all 0.3s;
+    font-size: 14px;
+    transition: 0.2s;
 }
 
-.dropdown-content a:hover {
-    background-color: #f0f8ff;
-    color: #004aad;
-    padding-left: 28px;
-}
+.dropdown-content a:hover { background-color: #f0f8ff; color: #004aad; padding-left: 25px; }
 
-.dropdown:hover .dropdown-content {
-    display: block;
-}
+.dropdown:hover .dropdown-content { display: block; }
 
-/* ==================== HERO, MODAL, ALERT, etc. ==================== */
-/* (Baki ka sara code niche waisa hi rahega) */
+/* ==================== HERO SECTION ==================== */
 .hero {
     min-height: 100vh;
     display: flex;
@@ -114,93 +90,49 @@ nav a:hover, .dropbtn:hover {
     align-items: center;
     text-align: center;
     color: white;
-    background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)),
-                url('../static/images/school_main.jpg');
+    background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('/static/images/school_main.jpg');
     background-size: cover;
     background-position: center;
-    padding: 0 20px;
+    padding: 80px 20px 0;
 }
 
-.hero h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(42px, 8vw, 78px);
-    margin-bottom: 20px;
-}
+.hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(35px, 6vw, 65px); margin-bottom: 20px; }
 
-.hero p {
-    font-size: clamp(18px, 4vw, 26px);
-    max-width: 700px;
-    margin-bottom: 40px;
-}
-
-.btn-main {
-    padding: 16px 45px;
-    background: #ffcc00;
-    color: #002b66;
-    border: none;
-    border-radius: 50px;
-    font-size: 18px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.4s;
-    box-shadow: 0 8px 25px rgba(255, 204, 0, 0.3);
-}
-
-.btn-main:hover {
-    transform: translateY(-5px) scale(1.05);
-    box-shadow: 0 15px 30px rgba(255, 204, 0, 0.4);
-}
-
+/* ==================== MODAL ==================== */
 .modal {
     display: none;
     position: fixed;
     z-index: 2000;
     left: 0; top: 0;
     width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.75);
-    backdrop-filter: blur(8px);
+    background-color: rgba(0,0,0,0.85);
+    backdrop-filter: blur(5px);
 }
 
 .modal-content {
     background: white;
-    margin: 5% auto;
-    padding: 35px 30px;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 480px;
-    animation: modalPop 0.4s ease;
+    margin: 8% auto;
+    padding: 30px;
+    border-radius: 15px;
+    width: 95%;
+    max-width: 700px;
+    position: relative;
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
-@keyframes modalPop {
-    from { transform: scale(0.7); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+.close-btn { position: absolute; top: 10px; right: 20px; font-size: 30px; cursor: pointer; color: #555; }
+.close-btn:hover { color: #dc2626; }
+
+/* ==================== RESPONSIVE (MOBILE) ==================== */
+@media (max-width: 1024px) {
+    header { height: auto; padding: 15px; flex-direction: column; gap: 15px; }
+    nav ul { gap: 5px; flex-wrap: wrap; justify-content: center; }
+    .hero { padding-top: 180px; }
 }
 
-.close-btn {
-    position: absolute;
-    top: 15px;
-    right: 25px;
-    font-size: 32px;
-    cursor: pointer;
-    color: #666;
-}
-
-.close-btn:hover { color: #e74c3c; }
-
-.form-group { margin-bottom: 18px; text-align: left; }
-.form-group label { display: block; margin-bottom: 6px; font-weight: 500; color: #004aad; }
-.form-group input, .form-group select, .form-group textarea {
-    width: 100%; padding: 14px; border: 1.5px solid #ddd; border-radius: 10px; font-size: 16px;
-}
-
-.whatsapp {
-    position: fixed; bottom: 25px; right: 25px; background: #25D366; color: white;
-    width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
-    font-size: 28px; border-radius: 50%; box-shadow: 0 5px 20px rgba(37, 211, 102, 0.5);
-    z-index: 999; text-decoration: none;
-}
-
-@media (max-width: 768px) {
-    header { padding: 15px 5%; flex-direction: column; gap: 15px; }
-    nav ul { gap: 15px; flex-wrap: wrap; justify-content: center; }
+@media (max-width: 600px) {
+    .site-logo { height: 45px; }
+    .modal-content { margin: 15% auto; padding: 20px; }
+    .hero { padding-top: 120px; }
 }

@@ -1,58 +1,102 @@
-<nav>
-    <ul>
-        <li><a href="{{ url_for('home') }}">Home</a></li>
-        <li><a href="{{ url_for('about') }}">About</a></li>
-        <li><a href="{{ url_for('academics') }}">Academics</a></li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropbtn">Student Corner ▾</a>
-            <div class="dropdown-content">
-                <a href="{{ url_for('admission') }}">Admission Application</a>
-                <a href="{{ url_for('tc_application') }}">Transfer Certificate (TC)</a>
-                <a href="{{ url_for('character_certificate') }}">Character Certificate</a>
-                <a href="{{ url_for('bonafide') }}">Bonafide Certificate</a>
-                <a href="{{ url_for('fee_structure') }}">Fee Structure (Page)</a>
-                <a href="{{ url_for('fee_deposit') }}">Fee Deposit / Payment</a>
-                <a href="#" onclick="openFeeModal()">Fee Structure 2026-27 (Modal)</a>
-                <a href="{{ url_for('prospectus') }}">Prospectus</a>
-            </div>
-        </li>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Angels Valley Public School{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
 
-        <li class="dropdown">
-            <a href="#" class="dropbtn">Downloads ▾</a>
-            <div class="dropdown-content">
-                {% if admission_form %}
-                    <a href="{{ url_for('static', filename='uploads/docs/' + admission_form.filename) }}" target="_blank">{{ admission_form.title }}</a>
-                {% else %}
-                    <a href="#">Admission Form (Updating...)</a>
-                {% endif %}
-                
-                <a href="{{ url_for('receipt_search') }}">Download Fee Receipt</a>
-                
-                {% if first_term %}
-                    <a href="{{ url_for('static', filename='uploads/docs/' + first_term.filename) }}" target="_blank">{{ first_term.title }}</a>
-                {% endif %}
-                
-                {% if half_yearly %}
-                    <a href="{{ url_for('static', filename='uploads/docs/' + half_yearly.filename) }}" target="_blank">{{ half_yearly.title }}</a>
-                {% endif %}
-                
-                {% if annual_exam %}
-                    <a href="{{ url_for('static', filename='uploads/docs/' + annual_exam.filename) }}" target="_blank">{{ annual_exam.title }}</a>
-                {% endif %}
-                
-                <a href="{{ url_for('results') }}" style="color: #d32f2f; font-weight: 600;">Check Results</a>
-                
-                {% if holiday_list %}
-                    <a href="{{ url_for('static', filename='uploads/docs/' + holiday_list.filename) }}" target="_blank">{{ holiday_list.title }}</a>
-                {% endif %}
-                
-                <a href="#" target="_blank">School Prospectus</a>
-            </div>
-        </li>
-        
-        <li><a href="{{ url_for('gallery') }}">Gallery</a></li>
-        <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
-        <li><a href="{{ url_for('admin_dashboard') }}" style="background: #1f4e79; color: white; padding: 5px 12px; border-radius: 4px; font-weight: 500;">Admin Panel</a></li>
-    </ul>
-</nav>
+<header>
+    <div class="logo-container">
+        <a href="{{ url_for('home') }}">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="School Logo" class="site-logo">
+        </a>
+    </div>
+
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li><a href="{{ url_for('about') }}">About</a></li>
+            <li><a href="{{ url_for('academics') }}">Academics</a></li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropbtn">Student Corner ▾</a>
+                <div class="dropdown-content">
+                    <a href="{{ url_for('admission') }}">Admission Application</a>
+                    <a href="{{ url_for('tc_application') }}">Transfer Certificate (TC)</a>
+                    <a href="{{ url_for('character_certificate') }}">Character Certificate</a>
+                    <a href="{{ url_for('bonafide') }}">Bonafide Certificate</a>
+                    <a href="{{ url_for('fee_structure') }}">Fee Structure (Page)</a>
+                    <a href="{{ url_for('fee_deposit') }}">Fee Deposit / Payment</a>
+                    <a href="#" onclick="openFeeModal()">Fee Structure 2026-27 (Modal)</a>
+                    <a href="{{ url_for('prospectus') }}">Prospectus</a>
+                </div>
+            </li>
+
+            <li class="dropdown">
+                <a href="#" class="dropbtn">Downloads ▾</a>
+                <div class="dropdown-content">
+                    {% if admission_form %}
+                        <a href="{{ url_for('static', filename='uploads/docs/' + admission_form.filename) }}" target="_blank">Admission Form 2026-27</a>
+                    {% else %}
+                        <a href="#">Admission Form (Updating...)</a>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('receipt_search') }}">Download Fee Receipt</a>
+                    
+                    {% if annual_exam %}
+                        <a href="{{ url_for('static', filename='uploads/docs/' + annual_exam.filename) }}" target="_blank">Annual Exam Schedule</a>
+                    {% endif %}
+                    <a href="#" target="_blank">First Term Exam Schedule</a>
+                    <a href="#" target="_blank">Half Yearly Exam Schedule</a>
+                    
+                    <a href="{{ url_for('results') }}" style="color: #d32f2f; font-weight: 600;">Check Results</a>
+                    <a href="#" target="_blank">Holiday List 2026-27</a>
+                </div>
+            </li>
+            
+            <li><a href="{{ url_for('gallery') }}">Gallery</a></li>
+            <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+            <li><a href="{{ url_for('admin_dashboard') }}" style="background: #1f4e79; color: white; padding: 5px 12px; border-radius: 4px; font-weight: 500;">Admin Panel</a></li>
+        </ul>
+    </nav>
+</header>
+
+<div id="feeModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeFeeModal()">×</span>
+        <h2 style="color:#004aad; text-align:center; margin-bottom:20px;">Fee Structure 2026-27</h2>
+        <table>
+            <thead>
+                <tr style="background:#004aad; color:white;">
+                    <th style="padding:10px;">Class Name</th>
+                    <th style="padding:10px;">Monthly Fee</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fee in all_fees %}
+                <tr>
+                    <td style="padding:10px; border-bottom:1px solid #ddd;">{{ fee.class_name }}</td>
+                    <td style="padding:10px; border-bottom:1px solid #ddd;">₹ {{ fee.amount }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function openFeeModal() { document.getElementById('feeModal').style.display = 'block'; }
+    function closeFeeModal() { document.getElementById('feeModal').style.display = 'none'; }
+    // Close modal if clicked outside
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('feeModal')) { closeFeeModal(); }
+    }
+</script>
+
+</body>
+</html>

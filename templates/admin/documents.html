@@ -6,15 +6,28 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body { display: flex; min-height: 100vh; background: #f4f6f9; }
-        .sidebar { width: 260px; background: #1e3a5a; color: white; height: 100vh; position: fixed; overflow-y: auto; }
+        
+        .sidebar { 
+            width: 260px; background: #1e3a5a; color: white; height: 100vh; 
+            position: fixed; left: 0; top: 0; flex-shrink: 0; 
+            overflow-y: auto; z-index: 1000;
+        }
+        .sidebar::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
         .sidebar h2 { padding: 20px; font-size: 18px; color: #ffcc00; text-align: center; }
-        .sidebar a { display: block; color: #cbd5e1; padding: 15px 20px; text-decoration: none; border-bottom: 1px solid #163b5d; }
+        .sidebar a { display: block; color: #cbd5e1; padding: 15px 20px; text-decoration: none; border-bottom: 1px solid #163b5d; transition: 0.3s; }
         .sidebar a:hover { background: #163b5d; color: white; }
+        
+        .group-title { padding: 15px 20px 5px 20px; font-size: 12px; color: #94a3b8; text-transform: uppercase; display: block; }
+        .media-menu { background: #163b5d; padding-left: 30px !important; font-size: 14px; }
+        .logout-btn { position: sticky; bottom: 0; background: #163b5d; color: #fca5a5 !important; border-top: 1px dashed #3b82f6; margin-top: 20px; }
+        
         .main-content { margin-left: 260px; width: calc(100% - 260px); padding: 30px; }
         .form-container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); max-width: 600px; }
         input, select { width: 100%; padding: 12px; margin: 10px 0 20px 0; border: 1px solid #ccc; border-radius: 4px; }
         .btn { background: #2563eb; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; }
         .btn:hover { background: #1d4ed8; }
+        .flash-msg { padding: 15px; margin-bottom: 20px; border-radius: 4px; background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
     </style>
 </head>
 <body>
@@ -22,17 +35,30 @@
 <div class="sidebar">
     <h2>Angels Valley Admin</h2>
     <a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a>
-    <a href="{{ url_for('admin_docs') }}" style="background: #163b5d; color: white;">📄 Manage Downloads</a>
-    <a href="{{ url_for('admin_logout') }}" style="color: #fca5a5; margin-top: 20px;">🚪 Logout</a>
+    <a href="{{ url_for('admin_notices') }}">📢 Manage Notices</a>
+    <div>
+        <span class="group-title">Downloads & Media</span>
+        <a href="{{ url_for('admin_docs') }}" style="background: #163b5d; color: white;">📄 Manage Downloads</a>
+        <a href="{{ url_for('admin_gallery') }}" class="media-menu">🖼️ Manage Gallery</a>
+        <a href="{{ url_for('manage_videos') }}" class="media-menu">🎥 Manage Videos</a>
+    </div>
+    <a href="{{ url_for('admin_fees') }}">💰 Manage Fees</a>
+    <a href="{{ url_for('view_deposits') }}">📋 View Fee Deposits</a>
+    <a href="{{ url_for('manual_sync') }}">🔄 Sync ERP Data</a>
+    <a href="{{ url_for('home') }}">🌐 View Website</a>
+    <a href="{{ url_for('change_password') }}">🔑 Change Password</a>
+    <a href="{{ url_for('admin_logout') }}" class="logout-btn">🚪 Logout</a>
 </div>
 
 <div class="main-content">
     <div class="form-container">
         <h1>Manage Downloadable Files</h1>
-        <p style="color: #666; margin-bottom: 20px;">Yahan se aap website ke 'Downloads' menu ko update kar sakte hain.</p>
+        {% with messages = get_flashed_messages() %}{% if messages %}
+            {% for message in messages %}<div class="flash-msg">{{ message }}</div>{% endfor %}
+        {% endif %}{% endwith %}
         
         <form method="POST" enctype="multipart/form-data">
-            <label>Document Display Title (jo website par dikhega):</label>
+            <label>Document Display Title:</label>
             <input type="text" name="title" placeholder="e.g. Annual Exam Schedule 2026-27" required>
             
             <label>Select Category:</label>
@@ -46,11 +72,9 @@
 
             <label>Upload File (PDF or JPG):</label>
             <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" required>
-            
             <button type="submit" class="btn">Upload & Update</button>
         </form>
     </div>
 </div>
-
 </body>
 </html>
