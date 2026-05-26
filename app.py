@@ -182,7 +182,7 @@ def gallery():
 
 
 
-# --- ADMIN GALLERY ROUTE ---------------------------------------------------------
+# ========================= GALLERY MANAGEMENT ROUTES =========================
 
 
 @app.route("/admin/gallery", methods=['GET', 'POST'])
@@ -209,6 +209,7 @@ def admin_gallery():
     
     images = GalleryImage.query.all()
     return render_template("admin/gallery.html", images=images)
+
 
 @app.route("/admin/gallery/delete/<int:id>") # Yeh URL pattern hona chahiye
 @login_required
@@ -1212,27 +1213,8 @@ def delete_fee(id):
 
 # ========================= APP RUNNER =========================
 if __name__ == "__main__":
+    # Render mein app.run() ki zaroorat nahi hai, Gunicorn ise handle karega.
+    # Sirf tables create karne ke liye ye block rakhein:
     with app.app_context():
-        try:
-            # 1. Standard tables create karein
-            db.create_all()
-            
-            # 2. Users table aur default admin setup
-            conn = sqlite3.connect('database.db')
-            cursor = conn.cursor()
-            cursor.execute("CREATE TABLE IF NOT EXISTS users (username TEXT, password TEXT)")
-            
-            # Check karein agar admin pehle se hai
-            cursor.execute("SELECT * FROM users WHERE username='admin'")
-            if not cursor.fetchone():
-                cursor.execute("INSERT INTO users VALUES ('admin', 'admin123')")
-                conn.commit()
-                print("✅ Default Admin created!")
-                
-            conn.close()
-            print("✅ Database Tables Created/Verified Successfully!")
-        except Exception as db_err:
-            print(f"❌ Database creation error: {str(db_err)}")
-    
-    # Server configuration
-    app.run(host='0.0.0.0', port=5000, debug=False)
+        db.create_all()
+        print("✅ Database tables initialized!")

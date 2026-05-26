@@ -1,6 +1,7 @@
 Flask
 Flask-Migrate
 Flask-SQLAlchemy
+reportlab
 SQLAlchemy
 gunicorn
 cloudinary
