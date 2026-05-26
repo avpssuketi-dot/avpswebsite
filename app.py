@@ -151,11 +151,17 @@ class FeeDeposit(db.Model):
 
 
 
-
 # ========================= CONTEXT PROCESSOR =========================
 @app.context_processor
-def inject_fees():
-    return {'all_fees': Fee.query.all()}
+def inject_global_data():
+    return {
+        'all_fees': Fee.query.all(),
+        'first_term': DownloadableDoc.query.filter_by(category='first_term').first(),
+        'half_yearly': DownloadableDoc.query.filter_by(category='half_yearly').first(),
+        'annual_exam': DownloadableDoc.query.filter_by(category='annual_exam').first(),
+        'holiday_list': DownloadableDoc.query.filter_by(category='holiday').first(),
+        'admission_form': DownloadableDoc.query.filter_by(category='admission_form').first()
+    }
 
 # ========================= MAIN WEBSITE ROUTES =========================
 @app.route("/")
@@ -217,25 +223,31 @@ def admin_gallery():
             new_img = GalleryImage(filename=filename, caption=caption, category=category)
             db.session.add(new_img)
             db.session.commit()
-            flash("Image uploaded successfully!", "success")
+            
+            # Category set ki: gallery_success
+            flash("Image uploaded successfully!", "gallery_success")
             return redirect(url_for('admin_gallery'))
     
     images = GalleryImage.query.all()
     return render_template("admin/gallery.html", images=images)
 
 
-@app.route("/admin/gallery/delete/<int:id>") # Yeh URL pattern hona chahiye
+@app.route("/admin/gallery/delete/<int:id>")
 @login_required
-def delete_gallery_image(id):  # <--- Yeh function ka naam 'delete_gallery_image' hi hona chahiye
+def delete_gallery_image(id):
     img = GalleryImage.query.get_or_404(id)
     file_path = os.path.join('static', 'images', 'gallery', img.filename)
+    
     if os.path.exists(file_path):
         os.remove(file_path)
     
     db.session.delete(img)
     db.session.commit()
-    flash("Image deleted successfully!", "success")
+    
+    # Category set ki: gallery_success
+    flash("Image deleted successfully!", "gallery_success")
     return redirect(url_for('admin_gallery'))
+
 
 # ========================= VIDEO MANAGEMENT ROUTES =========================
 
@@ -284,11 +296,33 @@ def admin_notices():
         new_notice = Notice(title=title, content=content, image_filename=filename)
         db.session.add(new_notice)
         db.session.commit()
-        flash("Notice posted successfully!", "success")
+        
+        # Category update ki: notice_success
+        flash("Notice posted successfully!", "notice_success")
         return redirect(url_for('admin_notices'))
     
-    notices = Notice.query.all()
+    # notices ko latest pehle dikhane ke liye .order_by(Notice.id.desc()) use karein
+    notices = Notice.query.order_by(Notice.id.desc()).all()
     return render_template("admin/notices.html", notices=notices)
+
+
+@app.route("/admin/notices/delete/<int:id>")
+@login_required
+def delete_notice(id):
+    notice = Notice.query.get_or_404(id)
+    
+    # Agar image file exist karti hai toh use delete karein
+    if notice.image_filename:
+        file_path = os.path.join('static', 'uploads', 'notices', notice.image_filename)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            
+    db.session.delete(notice)
+    db.session.commit()
+    
+    # Category set ki: notice_success
+    flash("Notice deleted successfully!", "notice_success")
+    return redirect(url_for('admin_notices'))
 
 
 # --- INQUIRY ROUTE -------------------------------------
@@ -1221,6 +1255,49 @@ def delete_fee(id):
     db.session.commit()
     flash("Fee deleted successfully!", "success")
     return redirect(url_for('admin_fees')) # Ya jahan aapko redirect karna ho
+
+
+#--------------------admin docs upload----------------------------------------
+
+@app.route("/admin/docs", methods=['GET', 'POST'])
+@login_required
+def admin_docs():
+    if request.method == 'POST':
+        title = request.form.get('title')
+        category = request.form.get('category')
+        file = request.files.get('file')
+        
+        if file and title and category:
+            # File ka naam secure karein
+            filename = secure_filename(file.filename)
+            save_path = os.path.join('static', 'uploads', 'docs')
+            
+            # Folder check karein
+            if not os.path.exists(save_path):
+                os.makedirs(save_path)
+            
+            # File save karein
+            file.save(os.path.join(save_path, filename))
+            
+            # Database mein purani file (agar ho) toh delete karke nayi save karein
+            old_doc = DownloadableDoc.query.filter_by(category=category).first()
+            if old_doc:
+                # Purani file folder se delete karein
+                old_file_path = os.path.join(save_path, old_doc.filename)
+                if os.path.exists(old_file_path):
+                    os.remove(old_file_path)
+                db.session.delete(old_doc)
+            
+            # Naya record add karein
+            new_doc = DownloadableDoc(title=title, category=category, filename=filename)
+            db.session.add(new_doc)
+            db.session.commit()
+            
+            flash(f"{category.replace('_', ' ').title()} updated successfully!", "success")
+            # Refresh par resubmission rokne ke liye redirect
+            return redirect(url_for('admin_docs'))
+            
+    return render_template("admin/documents.html")
 
 
 

@@ -133,3 +133,13 @@ class Video(db.Model):
     title = db.Column(db.String(100), nullable=False)
     video_url = db.Column(db.String(200), nullable=False)
     date_added = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+class DownloadableDoc(db.Model):
+    __tablename__ = 'downloadable_doc'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False) # e.g., "Admission Form 2026-27"
+    category = db.Column(db.String(50), nullable=False, unique=True) # unique=True zaruri hai taaki ek category ki ek hi file rahe
+    filename = db.Column(db.String(200), nullable=False)
+
+    def __repr__(self):
+        return f'<Doc {self.category}>'
