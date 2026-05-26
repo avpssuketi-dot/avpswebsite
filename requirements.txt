@@ -10,3 +10,4 @@ numpy
 reportlab
 xhtml2pdf
 python-dateutil
+psycopg2-binary
