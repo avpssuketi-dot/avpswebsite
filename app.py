@@ -25,39 +25,52 @@ from reportlab.lib.styles import getSampleStyleSheet
 
 
 # ========================= App & DB Setup =========================
-from models import db # Models se 'db' instance import karein
+
+import os
+import cloudinary
+from flask import Flask
+from flask_migrate import Migrate  # 1. Import Migrate
+from models import db 
 
 app = Flask(__name__)
 app.secret_key = 'kuch_bhi_secret_string_yahan_likho'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///school.db'
+
+# --- DATABASE CONFIGURATION ---
+db_url = os.environ.get('DATABASE_URL')
+
+# Postgres URL fix
+if db_url and db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url or 'sqlite:///school.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Cloudinary Configuration
+# --- CLOUDINARY CONFIGURATION ---
 cloudinary.config(
     cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME', 'djjvsvvy8'),
     api_key = os.environ.get('CLOUDINARY_API_KEY', '465926195419728'),
-    api_secret = os.environ.get('CLOUDINARY_API_SECRET, ') # Ise Render Environment Variables mein set karein
+    api_secret = os.environ.get('CLOUDINARY_API_SECRET')
 )
 
-# 1. DB aur Migrate ko App ke saath bind karein
+# 2. DB aur Migrate ko App ke saath bind karein
 db.init_app(app)
 migrate = Migrate(app, db)
 
-
-# 2. Models yahan import karein (User ko zaroor add karein)
+# 3. Models import karein
 from models import Result, Admission, Inquiry, Notice, GalleryImage, Fee, FeeDeposit, User, Video
 
-# 3. Tables Create karein
+# 4. Tables Create karein aur Admin setup
 with app.app_context():
     db.create_all()
     
-    # Admin User Initialization (Ise yahan rakhein taaki server start hote hi user ban jaye)
+    # Admin User Initialization
     admin = User.query.filter_by(username='admin').first()
     if not admin:
         new_admin = User(username='admin', password='123') 
         db.session.add(new_admin)
         db.session.commit()
         print("--- Admin user created successfully ---")
+
 
 # ========================= SECURITY SHIELD =========================
 def login_required(f):
