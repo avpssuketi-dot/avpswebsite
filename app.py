@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file, session
+import sqlite3
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime, timezone
@@ -294,15 +295,52 @@ def admin_login():
         username = request.form.get('username')
         password = request.form.get('password')
         
-        if username == "admin" and password == "admin123":
+        # Database connection
+        conn = sqlite3.connect('database.db')
+        cursor = conn.cursor()
+        
+        # Check database for credentials
+        cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
+        user = cursor.fetchone()
+        conn.close()
+        
+        if user:
             session['logged_in'] = True
             session.permanent = True
             return redirect(url_for('admin_dashboard'))
         else:
-            flash("Invalid Username or Password! Please try again.", "danger")
+            flash("Invalid Username or Password!", "danger")
             return redirect(url_for('admin_login'))
             
     return render_template("admin/login.html")
+
+@app.route('/change-password', methods=['GET', 'POST'])
+def change_password():
+    # Login route se match karne wala session check
+    if 'logged_in' not in session:
+        return "Access Denied", 403
+    
+    if request.method == 'POST':
+        new_password = request.form.get('new_password')
+        
+        conn = sqlite3.connect('database.db')
+        cursor = conn.cursor()
+        
+        # Admin ka password update karein
+        cursor.execute("UPDATE users SET password = ? WHERE username = 'admin'", (new_password,))
+        conn.commit()
+        conn.close()
+        
+        return "Password successfully updated! <a href='/admin/dashboard'>Go Back to Dashboard</a>"
+        
+    return '''
+        <h3>Change Admin Password</h3>
+        <form method="POST">
+            <input type="password" name="new_password" placeholder="New Password" required>
+            <button type="submit">Update Password</button>
+        </form>
+    '''
+
 
 
 @app.route("/admin/logout")
@@ -1114,16 +1152,31 @@ def delete_fee(id):
     flash("Fee deleted successfully!", "success")
     return redirect(url_for('admin_fees')) # Ya jahan aapko redirect karna ho
 
+
+
 # ========================= APP RUNNER =========================
 if __name__ == "__main__":
     with app.app_context():
         try:
+            # 1. Standard tables create karein
             db.create_all()
+            
+            # 2. Users table aur default admin setup
+            conn = sqlite3.connect('database.db')
+            cursor = conn.cursor()
+            cursor.execute("CREATE TABLE IF NOT EXISTS users (username TEXT, password TEXT)")
+            
+            # Check karein agar admin pehle se hai
+            cursor.execute("SELECT * FROM users WHERE username='admin'")
+            if not cursor.fetchone():
+                cursor.execute("INSERT INTO users VALUES ('admin', 'admin123')")
+                conn.commit()
+                print("✅ Default Admin created!")
+                
+            conn.close()
             print("✅ Database Tables Created/Verified Successfully!")
         except Exception as db_err:
             print(f"❌ Database creation error: {str(db_err)}")
     
     # Server configuration
-    # host='0.0.0.0' zaroori hai taaki server bahar se access ho sake
-    # port 5000 ya 8000 use karein jo hosting provider support karta ho
     app.run(host='0.0.0.0', port=5000, debug=False)
