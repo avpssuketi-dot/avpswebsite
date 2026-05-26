@@ -84,7 +84,10 @@ class Notice(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     content = db.Column(db.Text, nullable=False)
+    # Naya column add kiya
+    image_filename = db.Column(db.String(200), nullable=True) 
     date_posted = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
 
 class GalleryImage(db.Model):
     __tablename__ = 'gallery_image'
@@ -121,3 +124,12 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
+
+# Yeh aapki models.py mein hona chahiye
+class Video(db.Model):
+    __tablename__ = 'video'
+    __table_args__ = {'extend_existing': True}
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    video_url = db.Column(db.String(200), nullable=False)
+    date_added = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))

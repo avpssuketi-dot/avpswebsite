@@ -1,107 +1,115 @@
 {% include "partials/header.html" %}
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <div id="flash-container" style="position: fixed; top: 80px; left: 0; right: 0; z-index: 9999; display: flex; justify-content: center; padding: 0 20px;">
-      {% for category, message in messages %}
-        <div style="background: {% if category == 'success' %}#10b981{% else %}#ef4444{% endif %}; color: white; padding: 15px 30px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-weight: 600; animation: fadeIn 0.5s;">
-          {{ message }}
-        </div>
-      {% endfor %}
-    </div>
-    <script>
-      setTimeout(() => { document.getElementById('flash-container').style.display = 'none'; }, 5000);
-    </script>
-  {% endif %}
-{% endwith %}
+<div style="position: fixed; top: 100px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 12px; background: rgba(255,255,255,0.95); padding: 12px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+    <a href="https://wa.me/918115430460" target="_blank" title="WhatsApp"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width: 25px; display: block;"></a>
+    <a href="https://www.facebook.com/angelsvalleyfatehpur" target="_blank" title="Facebook"><img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png" style="width: 25px; display: block;"></a>
+    <a href="https://www.youtube.com/@AngelsValleySchool" target="_blank" title="YouTube"><img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" style="width: 25px; display: block;"></a>
+    <a href="https://x.com/" target="_blank" title="X"><img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg" style="width: 22px; display: block;"></a>
+    <a href="https://linkedin.com/" target="_blank" title="LinkedIn"><img src="https://upload.wikimedia.org/wikipedia/commons/8/81/LinkedIn_icon.svg" style="width: 25px; display: block;"></a>
+</div>
 
 <section class="hero-section" style="position: relative; min-height: 600px; background: linear-gradient(rgba(15, 43, 72, 0.9), rgba(15, 43, 72, 0.9)), url('/static/images/school-campus.jpg') no-repeat center center/cover; display: flex; align-items: center; justify-content: center; text-align: center; color: white; padding: 20px;">
     <div style="z-index: 1; max-width: 900px;">
-        <h1 style="font-size: clamp(1.5rem, 4vw, 3.5rem); font-weight: 900; margin-bottom: 15px; text-shadow: 2px 4px 10px rgba(0,0,0,0.3);">Angels Valley Public School</h1>
+        <h1 style="font-size: clamp(1.5rem, 4vw, 3.5rem); font-weight: 900; margin-bottom: 15px;">Angels Valley Public School</h1>
         <p id="typewriter" style="font-size: clamp(1.2rem, 3vw, 1.8rem); color: #60a5fa; font-weight: 500; min-height: 50px;"></p>
         
         <div style="margin-top: 30px;">
-            <button onclick="document.getElementById('inquiry-section').scrollIntoView({behavior: 'smooth'})" class="btn-modern" style="padding: 18px 45px; font-size: 1.1rem; border: none; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.3);">📢 Admission Open 2026-27</button>
+            <button onclick="document.getElementById('inquiry-section').scrollIntoView({behavior: 'smooth'})" class="btn-modern">📢 Admission Open 2026-27</button>
         </div>
 
-        <div style="display: flex; justify-content: center; gap: 50px; margin-top: 60px; flex-wrap: wrap;">
-            <div style="text-align: center;"><h3 style="margin: 0; font-size: 2.2rem; color: #10b981;">400+</h3><p style="color: #cbd5e1; margin: 0; font-size: 0.9rem;">Happy Students</p></div>
-            <div style="text-align: center;"><h3 style="margin: 0; font-size: 2.2rem; color: #f59e0b;">15+</h3><p style="color: #cbd5e1; margin: 0; font-size: 0.9rem;">Expert Teachers</p></div>
-            <div style="text-align: center;"><h3 style="margin: 0; font-size: 2.2rem; color: #3b82f6;">10+</h3><p style="color: #cbd5e1; margin: 0; font-size: 0.9rem;">Years Legacy</p></div>
+        <div style="display: flex; justify-content: center; gap: 40px; margin-top: 50px; flex-wrap: wrap;">
+            <div style="text-align: center;">
+                <h3 style="margin: 0; font-size: 2rem; color: #60a5fa;">500+</h3>
+                <p style="margin: 0; font-size: 1rem; color: #cbd5e1;">Happy Students</p>
+            </div>
+            <div style="text-align: center;">
+                <h3 style="margin: 0; font-size: 2rem; color: #60a5fa;">15+</h3>
+                <p style="margin: 0; font-size: 1rem; color: #cbd5e1;">Expert Faculty</p>
+            </div>
+            <div style="text-align: center;">
+                <h3 style="margin: 0; font-size: 2rem; color: #60a5fa;">10+</h3>
+                <p style="margin: 0; font-size: 1rem; color: #cbd5e1;">Years Excellence</p>
+            </div>
         </div>
     </div>
 </section>
 
-<script>
-    const text = "Nurturing Excellence: Nursery to 8th Grade...";
-    let i = 0;
-    function type() {
-        if (i < text.length) {
-            document.getElementById("typewriter").innerHTML += text.charAt(i);
-            i++;
-            setTimeout(type, 80);
-        }
-    }
-    window.onload = type;
-</script>
 
-<section style="padding: 60px 5%; max-width: 1200px; margin: auto;">
-    <h2 style="text-align: center; color: #1f4e79; margin-bottom: 40px; font-size: 2rem;">Our Campus Life</h2>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-        <img src="/static/images/classroom.jpg" style="width: 100%; height: 250px; object-fit: cover; border-radius: 15px; transition: 0.3s;" alt="Classroom">
-        <img src="/static/images/lab.jpg" style="width: 100%; height: 250px; object-fit: cover; border-radius: 15px; transition: 0.3s;" alt="Computer Lab">
-        <img src="/static/images/playground.jpg" style="width: 100%; height: 250px; object-fit: cover; border-radius: 15px; transition: 0.3s;" alt="Playground">
-    </div>
-</section>
 
-<section style="padding: 40px 5%; background: #ffffff;">
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1200px; margin: auto;">
-        <div class="modern-card" style="border-top: 5px solid #10b981;"><div style="font-size: 2.5rem; margin-bottom: 10px;">🌱</div><h3 style="color: #1f4e79;">Our Mission</h3><p style="color: #64748b; line-height: 1.6;">Joyful learning that builds strong foundations and moral values for students from Nursery to 8th grade.</p></div>
-        <div class="modern-card" style="border-top: 5px solid #f59e0b;"><div style="font-size: 2.5rem; margin-bottom: 10px;">🌟</div><h3 style="color: #1f4e79;">Our Vision</h3><p style="color: #64748b; line-height: 1.6;">To be the most trusted primary & middle school, preparing every child for future academic success.</p></div>
-        <div class="modern-card" style="border-top: 5px solid #3b82f6;"><div style="font-size: 2.5rem; margin-bottom: 10px;">🧸</div><h3 style="color: #1f4e79;">Why Choose Us?</h3><p style="color: #64748b; line-height: 1.6;">Play-way methods for early years, activity-based primary learning, and conceptual clarity for middle school.</p></div>
-    </div>
-</section>
 
 <section id="inquiry-section" style="padding: 60px 5%; background: #f8fafc;">
     <div style="max-width: 1200px; margin: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 50px;">
+        
         <div class="modern-card" style="border-top: 6px solid #1f4e79;">
             <h3 style="color: #1f4e79; margin-bottom: 25px;">📢 Official Notice Board</h3>
             <div style="max-height: 400px; overflow-y: auto;">
                 {% for notice in notices %}
                     <div style="background: #f1f5f9; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #10b981;">
-                        <h4 style="color: #1f4e79; margin: 0 0 5px 0;">{{ notice.title }}</h4>
+                        <h4 style="color: #1f4e79;">{{ notice.title }}</h4>
                         <p style="font-size: 13px; color: #475569;">{{ notice.content }}</p>
-                        <small style="color: #94a3b8;">📅 {{ notice.date_posted.strftime('%d %b, %Y') }}</small>
                     </div>
                 {% endfor %}
             </div>
         </div>
+
         <div class="modern-card" style="border-top: 6px solid #d32f2f;">
             <h3 style="color: #1f4e79; margin-bottom: 20px;">📝 Quick Admission Inquiry</h3>
             <form action="/submit_inquiry" method="POST">
-                <input type="text" name="student_name" placeholder="Student's Name" class="form-control-quick" required style="margin-bottom: 15px;">
-                <input type="text" name="father_name" placeholder="Father's Name" class="form-control-quick" required style="margin-bottom: 15px;">
-                <select name="admission_class" class="form-control-quick" required style="margin-bottom: 15px;">
-                    <option value="">Select Class</option>
-                    <option value="Nursery">Nursery</option><option value="LKG">LKG</option><option value="UKG">UKG</option>
-                    {% for i in range(1, 9) %}<option value="Class {{i}}">Class {{i}}</option>{% endfor %}
-                </select>
-                <input type="tel" name="mobile" placeholder="Mobile Number" class="form-control-quick" required style="margin-bottom: 20px;">
-                <button type="submit" class="btn-modern" style="width: 100%; border: none; cursor: pointer;">Send Inquiry</button>
+                <input type="text" name="student_name" placeholder="Student's Name" class="form-control-quick" required>
+                <input type="text" name="father_name" placeholder="Father's Name" class="form-control-quick" required>
+                <input type="text" name="class_applying" placeholder="Class Applying For" class="form-control-quick" required>
+                <input type="tel" name="mobile" placeholder="Mobile Number" class="form-control-quick" required>
+                <textarea name="address" placeholder="Residential Address" class="form-control-quick" rows="2"></textarea>
+                
+                <button type="submit" class="btn-modern" style="width: 100%; margin-bottom: 15px;">Send Inquiry</button>
             </form>
+            
+            <div style="text-align: center; margin-top: 10px;">
+                <p style="font-size: 14px; color: #64748b;">Want to join us officially?</p>
+                <a href="{{ url_for('admission') }}" style="color: #1f4e79; font-weight: bold; text-decoration: underline;">
+                    Fill Detailed Admission Form
+                </a>
+            </div>
         </div>
     </div>
 </section>
 
+<section style="padding: 60px 5%; background: #ffffff;">
+    <h2 style="text-align: center; color: #1f4e79; margin-bottom: 40px;">School Updates & Media</h2>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; max-width: 1200px; margin: auto;">
+        {% for video in videos %}
+        <div class="modern-card">
+            <h4 style="margin-bottom:10px;">{{ video.title }}</h4>
+            <iframe width="100%" height="200" 
+                src="https://www.youtube.com/embed/{% if 'youtu.be/' in video.video_url %}{{ video.video_url.split('youtu.be/')[-1].split('?')[0] }}{% elif 'v=' in video.video_url %}{{ video.video_url.split('v=')[-1].split('&')[0] }}{% else %}{{ video.video_url.split('/')[-1] }}{% endif %}" 
+                frameborder="0" allowfullscreen style="border-radius:10px;">
+            </iframe>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; max-width: 1200px; margin: 40px auto 0;">
+        {% for img in images %}
+        <div style="height: 200px; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <img src="{{ url_for('static', filename='images/gallery/' + img.filename) }}" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+
 <style>
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-    .form-control-quick { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
-    .modern-card { background: white; border-radius: 20px; padding: 30px; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-    .modern-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-    .btn-modern { background: #1f4e79; color: white; padding: 15px 30px; border-radius: 50px; font-weight: 600; transition: 0.3s; }
-    .btn-modern:hover { background: #153655; transform: translateY(-3px); }
-    html { scroll-behavior: smooth; }
-    @media (max-width: 768px) { .hero-section { min-height: 450px; } }
+    .modern-card { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .form-control-quick { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 8px; }
+    .btn-modern { background: #1f4e79; color: white; padding: 15px 30px; border-radius: 50px; font-weight: 600; cursor: pointer; border: none; }
 </style>
+
+<script>
+    const text = "Nurturing Excellence: Nursery to 8th Grade...";
+    let i = 0;
+    function type() { if (i < text.length) { document.getElementById("typewriter").innerHTML += text.charAt(i); i++; setTimeout(type, 80); } }
+    window.onload = type;
+</script>
 
 {% include "partials/footer.html" %}

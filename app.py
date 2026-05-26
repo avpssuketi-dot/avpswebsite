@@ -45,7 +45,7 @@ migrate = Migrate(app, db)
 
 
 # 2. Models yahan import karein (User ko zaroor add karein)
-from models import Result, Admission, Inquiry, Notice, GalleryImage, Fee, FeeDeposit, User
+from models import Result, Admission, Inquiry, Notice, GalleryImage, Fee, FeeDeposit, User, Video
 
 # 3. Tables Create karein
 with app.app_context():
@@ -137,6 +137,8 @@ class FeeDeposit(db.Model):
     date_submitted = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 
+
+
 # ========================= CONTEXT PROCESSOR =========================
 @app.context_processor
 def inject_fees():
@@ -145,8 +147,18 @@ def inject_fees():
 # ========================= MAIN WEBSITE ROUTES =========================
 @app.route("/")
 def home():
+    # 1. Notices fetch karein
     notices = Notice.query.order_by(Notice.date_posted.desc()).limit(5).all()
-    return render_template("index.html", notices=notices)
+    
+    # 2. Videos fetch karein
+    videos = Video.query.all() 
+    
+    # 3. Gallery Images fetch karein (Yeh zaroori hai)
+    images = GalleryImage.query.all()
+    
+    # 4. Teeno ko ek saath template mein pass karein
+    return render_template("index.html", notices=notices, videos=videos, images=images)
+
 
 @app.route("/about")
 def about():
@@ -211,7 +223,58 @@ def delete_gallery_image(id):  # <--- Yeh function ka naam 'delete_gallery_image
     flash("Image deleted successfully!", "success")
     return redirect(url_for('admin_gallery'))
 
+# ========================= VIDEO MANAGEMENT ROUTES =========================
 
+@app.route("/admin/media/videos", methods=['GET', 'POST'])
+@login_required
+def manage_videos():
+    if request.method == 'POST':
+        title = request.form.get('title')
+        url = request.form.get('video_url')
+        new_video = Video(title=title, video_url=url)
+        db.session.add(new_video)
+        db.session.commit()
+        flash("Video added successfully!", "success")
+        return redirect(url_for('manage_videos'))
+    
+    videos = Video.query.all()
+    return render_template("admin/videos.html", videos=videos)
+
+@app.route("/admin/media/videos/delete/<int:id>", methods=['POST'])
+@login_required
+def delete_video(id):
+    video = Video.query.get_or_404(id)
+    db.session.delete(video)
+    db.session.commit()
+    flash("Video deleted successfully!", "success")
+    return redirect(url_for('manage_videos'))
+
+# ========================= UPDATED NOTICE ROUTE (With Image) =========================
+
+@app.route("/admin/notices", methods=['GET', 'POST'])
+@login_required
+def admin_notices():
+    if request.method == 'POST':
+        title = request.form.get('title')
+        content = request.form.get('content')
+        file = request.files.get('notice_image')
+        filename = None
+        
+        if file and file.filename != '':
+            filename = secure_filename(file.filename)
+            save_path = os.path.join('static', 'uploads', 'notices')
+            if not os.path.exists(save_path):
+                os.makedirs(save_path)
+            file.save(os.path.join(save_path, filename))
+        
+        new_notice = Notice(title=title, content=content, image_filename=filename)
+        db.session.add(new_notice)
+        db.session.commit()
+        flash("Notice posted successfully!", "success")
+        return redirect(url_for('admin_notices'))
+    
+    notices = Notice.query.all()
+    return render_template("admin/notices.html", notices=notices)
 
 
 # --- INQUIRY ROUTE -------------------------------------
@@ -383,20 +446,6 @@ def admin_dashboard():
                            total_notices=total_notices,
                            results=all_results)
 
-@app.route("/admin/notices", methods=['GET', 'POST'])
-@login_required
-def admin_notices():
-    if request.method == 'POST':
-        title = request.form.get('title')
-        content = request.form.get('content')
-        if title and content:
-            new_notice = Notice(title=title, content=content)
-            db.session.add(new_notice)
-            db.session.commit()
-            flash("Notice added successfully!", "success")
-            
-    notices = Notice.query.order_by(Notice.date_posted.desc()).all()
-    return render_template("admin/notices.html", notices=notices)
 
 
 
