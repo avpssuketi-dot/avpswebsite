@@ -1487,10 +1487,14 @@ def delete_doc(id):
 
 
 # ========================= APP RUNNER =========================
-if __name__ == "__main__":
+# app.py ke andar
+
+def setup_database():
     with app.app_context():
         db.create_all()
         print("✅ Database tables initialized!")
-    
-    # Localhost par dev server chalaane ke liye
+
+setup_database()
+
+if __name__ == "__main__":
     app.run(debug=False)
