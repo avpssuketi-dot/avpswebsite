@@ -74,6 +74,19 @@
     </div>
 </section>
 
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div style="padding: 15px; margin: 10px 0; background: {{ '#d1fae5' if category == 'success' else '#fee2e2' }}; color: {{ '#065f46' if category == 'success' else '#991b1b' }}; border-radius: 8px; text-align: center;">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+
+
 <section id="inquiry-section" style="padding: 60px 5%; background: #f8fafc;">
     <div style="max-width: 1200px; margin: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 50px;">
         <div class="modern-card" style="border-top: 6px solid #1f4e79;">
@@ -89,10 +102,10 @@
         </div>
         <div class="modern-card" style="border-top: 6px solid #d32f2f;">
             <h3 style="color: #1f4e79; margin-bottom: 20px;">📝 Quick Admission Inquiry</h3>
-            <form action="/submit_inquiry" method="POST">
+            <form action="{{ url_for('submit_inquiry') }}" method="POST">
                 <input type="text" name="student_name" placeholder="Student's Name" class="form-control-quick" required>
                 <input type="text" name="father_name" placeholder="Father's Name" class="form-control-quick" required>
-                <input type="text" name="class_applying" placeholder="Class Applying For" class="form-control-quick" required>
+                <input type="text" name="admission_class" placeholder="Class Applying For" class="form-control-quick" required>
                 <input type="tel" name="mobile" placeholder="Mobile Number" class="form-control-quick" required>
                 <textarea name="address" placeholder="Residential Address" class="form-control-quick" rows="2"></textarea>
                 <button type="submit" class="btn-modern" style="width: 100%; margin-bottom: 15px;">Send Inquiry</button>

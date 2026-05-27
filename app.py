@@ -57,7 +57,7 @@ db.init_app(app)
 migrate = Migrate(app, db)
 
 # 3. Models import karein
-from models import Result, Admission, Inquiry, Notice, GalleryImage, Fee, FeeDeposit, User, Video, DownloadableDoc
+from models import Result, Admission, Inquiry, Notice, GalleryImage, Fee, FeeDeposit, User, Video, Inquiry, TCApplication, BonafideRequest, Admission, Inquiry, Result, DownloadableDoc
 
 # 4. Tables Create karein aur Admin setup
 with app.app_context():
@@ -152,6 +152,15 @@ class FeeDeposit(db.Model):
     amount = db.Column(db.Float, nullable=False)
     transaction_id = db.Column(db.String(100))
     date_submitted = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+class CharacterCertificate(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    student_name = db.Column(db.String(100), nullable=False)
+    father_name = db.Column(db.String(100), nullable=False)
+    admission_number = db.Column(db.String(50), nullable=False)
+    class_name = db.Column(db.String(20), nullable=False)
+    reason = db.Column(db.String(200), nullable=True)
+    status = db.Column(db.String(20), default='Pending')
 
 
 
@@ -331,26 +340,53 @@ def delete_notice(id):
 
 @app.route("/submit_inquiry", methods=['POST'])
 def submit_inquiry():
+
+    print("DEBUG: Inquiry route hit hua!") # Terminal mein check karein
+    print(f"DEBUG: Form data: {request.form}") # Yahan data dikhega
     try:
+        # 1. Sabhi fields catch karein
         student_name = request.form.get('student_name', '').strip()
         father_name = request.form.get('father_name', '').strip()
         admission_class = request.form.get('admission_class', '').strip()
         mobile = request.form.get('mobile', '').strip()
+        address = request.form.get('address', '').strip()
 
+        # 2. Validation
         if not all([student_name, father_name, admission_class, mobile]):
-            flash("Please fill all fields for inquiry!", "danger")
-            return redirect(url_for('home'))
+            flash("Please fill all required fields!", "danger")
+            return redirect(url_for('home')) # 'index' ko 'home' se badal diya
 
-        new_inquiry = Inquiry(student_name=student_name, father_name=father_name, 
-                              admission_class=admission_class, mobile=mobile)
+        # 3. Save
+        new_inquiry = Inquiry(
+            student_name=student_name, 
+            father_name=father_name, 
+            admission_class=admission_class, 
+            mobile=mobile,
+            address=address
+        )
         db.session.add(new_inquiry)
         db.session.commit()
+        
         flash("✅ Inquiry Submitted Successfully!", "success")
-        return redirect(url_for('home'))
-    except Exception:
+        return redirect(url_for('home')) # 'index' ko 'home' se badal diya
+        
+    except Exception as e:
+        print(f"Error: {e}") 
         db.session.rollback()
         flash("Something went wrong. Try again.", "danger")
-        return redirect(url_for('home'))
+        return redirect(url_for('home')) # 'index' ko 'home' se badal diya
+
+
+
+
+@app.route('/view_inquiries')
+def view_inquiries():
+    # Database se saari inquiries fetch karein
+    inquiries = Inquiry.query.all()
+    return render_template('admin/view_inquiries.html', inquiries=inquiries)
+
+
+
 
 # --- ADMISSION ROUTE ----------------------------------------------------------------------------
 
@@ -394,7 +430,22 @@ def admission():
             return redirect(url_for('admission'))
     return render_template("admission.html")
 
-# --- FEE MANAGEMENT ---
+
+# Yeh route Admin Dashboard mein "View All" list ke liye hai
+@app.route('/view_admissions')
+def view_admissions():
+    # Saare admissions database se nikal kar list mein dikhayein
+    all_admissions = Admission.query.all()
+    return render_template('admin/view_admissions.html', admissions=all_admissions)
+
+@app.route('/view_admission_details/<int:id>')
+def view_admission_details(id):
+    adm = Admission.query.get_or_404(id)
+    # Aap ek 'admission_details.html' file bana sakte hain jo sirf 'adm' object ko dikhaye
+    return render_template('admin/admission_details.html', adm=adm)
+
+
+# --- FEE MANAGEMENT ----------------------------------------------------------------------------
 
 @app.route("/admin/fees", methods=['GET', 'POST'])
 def admin_fees():
@@ -1077,16 +1128,108 @@ def download_inquiry_slip(inquiry_id):
 
 
 
-#----------------------------- Rest of the Routes ------------------------------
+#----------------------------- Rest of the Routes ------------------------------------------------------
 
-@app.route("/tc_application")
-def tc_application(): return render_template("tc_application.html")
+@app.route('/tc_application', methods=['GET', 'POST'])
+def tc_application():
+    if request.method == 'POST':
+        # Yahan 'admission_number' zaroor add karein
+        new_app = TCApplication(
+            student_name = request.form.get('student_name'),
+            father_name = request.form.get('father_name'),
+            class_section = request.form.get('class_section'),
+            admission_number = request.form.get('admission_number'), # YEH ADD KAREIN
+            reason = request.form.get('reason'),
+            mobile = request.form.get('mobile'),
+            status = 'Pending' # Status bhi add kar dein
+        )
+        db.session.add(new_app)
+        db.session.commit()
+        flash("TC Application Submitted!", "success")
+        return redirect(url_for('tc_application'))
+    
+    return render_template('tc_application.html', is_admin=False)
 
-@app.route("/character_certificate")
-def character_certificate(): return render_template("character_certificate.html")
 
-@app.route("/bonafide")
-def bonafide(): return render_template("bonafide.html")
+
+
+@app.route("/character_certificate", methods=['GET', 'POST'])
+def character_certificate():
+    if request.method == 'POST':
+        # Database logic
+        new_req = CharacterCertificate(
+            student_name = request.form.get('student_name'),
+            father_name = request.form.get('father_name'),
+            admission_number = request.form.get('admission_number'),
+            class_name = request.form.get('class_name'),
+            reason = request.form.get('reason'),
+            status = 'Pending'
+        )
+        db.session.add(new_req)
+        db.session.commit()
+        
+        flash("✅ Application Submitted Successfully!", "success")
+        return redirect(url_for('character_certificate'))
+    
+    # YEH LINE ZAROORI HAI: Ye tab chalegi jab page pehli baar load hoga
+    return render_template("character_certificate.html")
+    
+
+# 1. View Requests ka route
+@app.route('/view_character_requests')
+def view_character_requests():
+    # Database se saari requests uthayein
+    requests = CharacterCertificate.query.all()
+    # Path 'admin/view_character.html' set kiya hai
+    return render_template('admin/view_character.html', requests=requests)
+
+# 2. Status Update karne ka route (Buttons ke liye)
+@app.route('/update_character_status/<int:id>/<new_status>')
+def update_character_status(id, new_status):
+    # Specific record fetch karein
+    request_data = CharacterCertificate.query.get_or_404(id)
+    # Status change karein
+    request_data.status = new_status
+    # Database mein save karein
+    db.session.commit()
+    # Wapas list page par bhejein
+    return redirect(url_for('view_character_requests'))
+
+
+
+
+@app.route('/bonafide', methods=['GET', 'POST'])
+def bonafide():
+    if request.method == 'POST':
+        # Debugging: terminal mein check karein ki data aa raha hai ya nahi
+        student_name = request.form.get('student_name')
+        father_name = request.form.get('father_name')
+        class_name = request.form.get('class_name') # HTML ka 'name' yahan hona chahiye
+        purpose = request.form.get('purpose')
+        mobile = request.form.get('mobile')
+        
+        # Agar class_name phir bhi None hai, toh ye check karke handle karein
+        if not class_name:
+            flash("Error: Class field is missing!", "danger")
+            return redirect(url_for('bonafide'))
+
+        new_req = BonafideRequest(
+            student_name=student_name,
+            father_name=father_name,
+            class_name=class_name,
+            purpose=purpose,
+            mobile=mobile
+        )
+        db.session.add(new_req)
+        db.session.commit()
+        
+        flash("✅ Bonafide Request Submitted Successfully!", "success")
+        return redirect(url_for('bonafide'))
+    
+    return render_template('bonafide.html', is_admin=False)
+
+
+
 
 @app.route("/prospectus")
 def prospectus(): return render_template("prospectus.html")
@@ -1094,6 +1237,32 @@ def prospectus(): return render_template("prospectus.html")
 @app.route('/results')
 def results():
     return render_template('results.html')
+
+# --- TC Applications Admin View -------------------------------------------------------------------------------------------
+
+
+@app.route('/view_tc_applications')
+def view_tc_applications():
+    # Admin ke liye list fetch karein
+    tc_apps = TCApplication.query.all() 
+    return render_template('tc_application.html', tc_apps=tc_apps, is_admin=True)
+
+@app.route('/update_tc_status/<int:id>/<new_status>')
+def update_tc_status(id, new_status):
+    tc_app = TCApplication.query.get_or_404(id)
+    tc_app.status = new_status
+    db.session.commit()
+    flash(f"TC request updated to {new_status}!", "success")
+    return redirect(url_for('view_tc_applications'))
+
+
+# --- Bonafide Requests Admin View ---
+@app.route('/view_bonafide_requests')
+def view_bonafide_requests():
+    # Admin ke liye list fetch karein
+    bonafide_reqs = BonafideRequest.query.all()
+    return render_template('bonafide.html', bonafide_reqs=bonafide_reqs, is_admin=True)
+
 
 
 #########------------Fee deposit --------------------------------
@@ -1163,24 +1332,25 @@ def fee_structure():
 
 @app.route("/receipt_search", methods=['GET', 'POST'])
 def receipt_search():
-    receipt = None
+    deposit = None # HTML mein hum 'deposit' variable use kar rahe hain
     if request.method == 'POST':
-        # User se transaction ID ya student name lein
-        search_query = request.form.get('query')
+        # Form ke 'name' attribute se data lein
+        search_query = request.form.get('transaction_id') 
         
-        # FeeDeposit model mein search karein (transaction_id ya student_name se)
-        # Yahan main transaction_id se search kar raha hoon
-        receipt = FeeDeposit.query.filter(
-            (FeeDeposit.transaction_id == search_query) | 
-            (FeeDeposit.student_name == search_query)
-        ).first()
-        
-        if not receipt:
-            flash("No receipt found with this ID or Name!", "danger")
-        else:
-            flash("Receipt found successfully!", "success")
+        if search_query:
+            # FeeDeposit model mein search karein
+            deposit = FeeDeposit.query.filter(
+                (FeeDeposit.transaction_id == search_query) | 
+                (FeeDeposit.student_name == search_query)
+            ).first()
             
-    return render_template("receipt_search.html", receipt=receipt)
+            if not deposit:
+                flash("No receipt found with this ID or Name!", "danger")
+            else:
+                flash("Receipt found successfully!", "success")
+                
+    return render_template("receipt_search.html", deposit=deposit)
+
 
 # ========================= MANUAL SYNC ROUTE =========================
 @app.route("/admin/manual-sync")
@@ -1255,7 +1425,6 @@ def download_receipt(deposit_id):
     
     return send_file(buffer, as_attachment=True, download_name=f"Receipt_{deposit.student_name}.pdf", mimetype='application/pdf')
 
-
 @app.route('/admin/delete_fee/<int:id>', methods=['POST'])
 @login_required
 def delete_fee(id):
@@ -1268,6 +1437,7 @@ def delete_fee(id):
 
 #--------------------admin docs upload----------------------------------------
 
+# 1. Manage Downloads (Upload/Update)
 @app.route("/admin/docs", methods=['GET', 'POST'])
 @login_required
 def admin_docs():
@@ -1278,29 +1448,42 @@ def admin_docs():
         
         if file and title and category:
             filename = secure_filename(file.filename)
-            save_path = os.path.join('static', 'uploads', 'docs')
+            save_path = os.path.join(app.root_path, 'static', 'uploads', 'docs')
             if not os.path.exists(save_path): os.makedirs(save_path)
             
-            # 1. Purani file delete karein
+            # Purana record delete (Replace logic)
             old_doc = DownloadableDoc.query.filter_by(category=category).first()
             if old_doc:
                 old_file_path = os.path.join(save_path, old_doc.filename)
-                if os.path.exists(old_file_path):
-                    os.remove(old_file_path)
-                # Database se nikal dein
+                if os.path.exists(old_file_path): os.remove(old_file_path)
                 db.session.delete(old_doc)
-                db.session.flush() # Transaction clear karein
+                db.session.flush()
             
-            # 2. Naya record save karein
             file.save(os.path.join(save_path, filename))
             new_doc = DownloadableDoc(title=title, category=category, filename=filename)
             db.session.add(new_doc)
             db.session.commit()
-            
-            flash(f"{category.replace('_', ' ').title()} updated successfully!", "success")
+            flash("File updated successfully!", "success")
             return redirect(url_for('admin_docs'))
             
-    return render_template("admin/documents.html")
+    all_docs = DownloadableDoc.query.all()
+    return render_template("admin/documents.html", all_docs=all_docs)
+
+# 2. Delete Route (Dedicated)
+@app.route("/admin/delete_doc/<int:id>", methods=['POST'])
+@login_required
+def delete_doc(id):
+    doc = DownloadableDoc.query.get_or_404(id)
+    save_path = os.path.join(app.root_path, 'static', 'uploads', 'docs')
+    file_path = os.path.join(save_path, doc.filename)
+    
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        
+    db.session.delete(doc)
+    db.session.commit()
+    flash("File deleted successfully!", "success")
+    return redirect(url_for('admin_docs'))
 
 
 # ========================= APP RUNNER =========================

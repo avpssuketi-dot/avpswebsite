@@ -23,11 +23,14 @@
         .logout-btn { position: sticky; bottom: 0; background: #163b5d; color: #fca5a5 !important; border-top: 1px dashed #3b82f6; margin-top: 20px; }
         
         .main-content { margin-left: 260px; width: calc(100% - 260px); padding: 30px; }
-        .form-container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); max-width: 600px; }
+        .form-container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); max-width: 800px; margin: auto; }
         input, select { width: 100%; padding: 12px; margin: 10px 0 20px 0; border: 1px solid #ccc; border-radius: 4px; }
         .btn { background: #2563eb; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; }
         .btn:hover { background: #1d4ed8; }
         .flash-msg { padding: 15px; margin-bottom: 20px; border-radius: 4px; background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
     </style>
 </head>
 <body>
@@ -74,6 +77,26 @@
             <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" required>
             <button type="submit" class="btn">Upload & Update</button>
         </form>
+
+        <h2 style="margin-top: 40px;">Existing Files</h2>
+        <table>
+            <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Action</th>
+            </tr>
+            {% for doc in all_docs %}
+            <tr>
+                <td>{{ doc.title }}</td>
+                <td>{{ doc.category.replace('_', ' ').title() }}</td>
+                <td>
+                    <form action="{{ url_for('delete_doc', id=doc.id) }}" method="POST" onsubmit="return confirm('Delete this file?');">
+                        <button type="submit" style="background: #ef4444; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px;">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
     </div>
 </div>
 </body>

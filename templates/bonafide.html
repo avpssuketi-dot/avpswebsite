@@ -2,33 +2,68 @@
 
 <section style="padding: 120px 5% 80px; background: #f8f9fa;">
     <div style="max-width: 800px; margin: auto;">
-        <h1 style="text-align: center; color: #004aad; margin-bottom: 40px;">Bonafide Certificate Application</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div style="padding: 15px; margin-bottom: 20px; border-radius: 8px; text-align: center;
+                          {% if category == 'success' %} background: #d1fae5; color: #065f46; border: 1px solid #065f46; 
+                          {% else %} background: #fee2e2; color: #991b1b; border: 1px solid #991b1b; {% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
         
+        {% if is_admin %}
+        <h1 style="text-align: center; color: #004aad; margin-bottom: 40px;">Bonafide Requests Management</h1>
+        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr style="border-bottom: 2px solid #eee;">
+                    <th style="padding: 12px; text-align: left;">Student Name</th>
+                    <th style="padding: 12px; text-align: left;">Class</th>
+                    <th style="padding: 12px; text-align: left;">Purpose</th>
+                    <th style="padding: 12px; text-align: left;">Mobile</th>
+                </tr>
+                {% for req in bonafide_reqs %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 12px;">{{ req.student_name }}</td>
+                    <td style="padding: 12px;">{{ req.class_name }}</td>
+                    <td style="padding: 12px;">{{ req.purpose }}</td>
+                    <td style="padding: 12px;">{{ req.mobile }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        {% else %}
+        <h1 style="text-align: center; color: #004aad; margin-bottom: 40px;">Bonafide Certificate Application</h1>
         <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-            <form action="#" method="POST">
-                <div class="form-group">
+            <form action="{{ url_for('bonafide') }}" method="POST">
+                <div class="form-group" style="margin-bottom: 15px;">
                     <label>Student's Full Name *</label>
-                    <input type="text" required>
+                    <input type="text" name="student_name" class="form-control" style="width:100%; padding: 10px;" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 15px;">
                     <label>Father's Name *</label>
-                    <input type="text" required>
+                    <input type="text" name="father_name" class="form-control" style="width:100%; padding: 10px;" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 15px;">
                     <label>Class & Section *</label>
-                    <input type="text" required>
+                    <input type="text" name="class_name" class="form-control" required placeholder="e.g. Class 5 - A">
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 15px;">
                     <label>Purpose of Bonafide *</label>
-                    <textarea rows="3" required></textarea>
+                    <textarea name="purpose" rows="3" class="form-control" style="width:100%; padding: 10px;" required></textarea>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 15px;">
                     <label>Mobile Number *</label>
-                    <input type="tel" required>
+                    <input type="tel" name="mobile" class="form-control" style="width:100%; padding: 10px;" required>
                 </div>
-                <button type="submit" class="btn-main" style="width:100%; margin-top:20px;">Submit Application</button>
+                <button type="submit" style="width:100%; margin-top:20px; padding: 15px; cursor: pointer; background: #004aad; color: white; border: none; border-radius: 5px;">Submit Application</button>
             </form>
         </div>
+        {% endif %}
     </div>
 </section>
 

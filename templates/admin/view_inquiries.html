@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Inquiries</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; padding: 30px; }
+        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: #1e3a5a; color: white; padding: 12px; text-align: left; }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Student Inquiries ({{ inquiries|length }})</h2>
+    <table>
+        <tr>
+            <th>Student Name</th>
+            <th>Father's Name</th>
+            <th>Class</th>
+            <th>Mobile</th>
+            <th>Address</th>
+        </tr>
+        {% for inq in inquiries %}
+        <tr>
+            <td>{{ inq.student_name }}</td>
+            <td>{{ inq.father_name }}</td>
+            <td>{{ inq.admission_class }}</td>
+            <td>{{ inq.mobile }}</td>
+            <td>{{ inq.address }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <a href="{{ url_for('admin_dashboard') }}">← Back to Dashboard</a>
+</div>
+
+</body>
+</html>

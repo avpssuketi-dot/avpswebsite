@@ -76,6 +76,7 @@ class Inquiry(db.Model):
     father_name = db.Column(db.String(100), nullable=False)
     admission_class = db.Column(db.String(30), nullable=False)
     mobile = db.Column(db.String(15), nullable=False)
+    address = db.Column(db.String(255), nullable=True)
     date_submitted = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 class Notice(db.Model):
@@ -133,6 +134,29 @@ class Video(db.Model):
     title = db.Column(db.String(100), nullable=False)
     video_url = db.Column(db.String(200), nullable=False)
     date_added = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class TCApplication(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    student_name = db.Column(db.String(100), nullable=False)
+    father_name = db.Column(db.String(100), nullable=False)
+    class_section = db.Column(db.String(50), nullable=False)
+    admission_number = db.Column(db.String(50), nullable=False) # Nayi field
+    reason = db.Column(db.Text, nullable=False)
+    mobile = db.Column(db.String(15), nullable=False)
+    status = db.Column(db.String(20), default='Pending')     # Nayi field
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class BonafideRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    student_name = db.Column(db.String(100), nullable=False)
+    father_name = db.Column(db.String(100), nullable=False)
+    class_name = db.Column(db.String(50), nullable=False)
+    purpose = db.Column(db.Text, nullable=False)
+    mobile = db.Column(db.String(15), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 
 class DownloadableDoc(db.Model):
     __tablename__ = 'downloadable_doc'

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TC Applications</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f6f9; }
+        .container { background: white; padding: 20px; border-radius: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background: #1e3a5a; color: white; }
+        .btn-action { padding: 5px 10px; border-radius: 4px; text-decoration: none; color: white; font-size: 12px; }
+        .approve { background: #28a745; }
+        .reject { background: #dc3545; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>🎓 Transfer Certificate Requests ({{ tc_requests|length }})</h2>
+    <table>
+        <tr>
+            <th>Student Name</th>
+            <th>Class</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+        {% for tc in tc_requests %}
+        <tr>
+            <td>{{ tc.student_name }}</td>
+            <td>{{ tc.class_name }}</td>
+            <td>{{ tc.reason }}</td>
+            <td><strong>{{ tc.status }}</strong></td>
+            <td>
+                {% if tc.status == 'Pending' %}
+                    <a href="{{ url_for('update_tc_status', id=tc.id, new_status='Approved') }}" class="btn-action approve">Approve</a>
+                    <a href="{{ url_for('update_tc_status', id=tc.id, new_status='Rejected') }}" class="btn-action reject">Reject</a>
+                {% else %}
+                    <span>-</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <a href="{{ url_for('admin_dashboard') }}">← Back to Dashboard</a>
+</div>
+</body>
+</html>

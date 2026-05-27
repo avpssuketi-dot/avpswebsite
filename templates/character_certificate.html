@@ -4,29 +4,40 @@
     <div style="max-width: 800px; margin: auto;">
         <h1 style="text-align: center; color: #004aad; margin-bottom: 40px;">Character Certificate Application</h1>
         
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div style="padding: 15px; margin-bottom: 20px; border-radius: 8px; text-align: center; 
+                          {% if 'success' in category %}background: #d1fae5; color: #065f46;{% else %}background: #fee2e2; color: #991b1b;{% endif %}">
+                  {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
         <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-            <form action="#" method="POST">
+            <form action="{{ url_for('character_certificate') }}" method="POST">
                 <div class="form-group">
                     <label>Student's Full Name *</label>
-                    <input type="text" required>
+                    <input type="text" name="student_name" class="form-control" required>
                 </div>
                 <div class="form-group">
                     <label>Father's Name *</label>
-                    <input type="text" required>
+                    <input type="text" name="father_name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Admission Number *</label>
+                    <input type="text" name="admission_number" class="form-control" required>
                 </div>
                 <div class="form-group">
                     <label>Class & Section *</label>
-                    <input type="text" required>
+                    <input type="text" name="class_name" class="form-control" required>
                 </div>
                 <div class="form-group">
                     <label>Purpose *</label>
-                    <textarea rows="3" required placeholder="e.g. For higher studies / Job"></textarea>
+                    <textarea name="reason" rows="3" class="form-control" required placeholder="e.g. For higher studies / Job"></textarea>
                 </div>
-                <div class="form-group">
-                    <label>Mobile Number *</label>
-                    <input type="tel" required>
-                </div>
-                <button type="submit" class="btn-main" style="width:100%; margin-top:20px;">Submit Application</button>
+                <button type="submit" class="btn-main" style="width:100%; margin-top:20px; cursor:pointer;">Submit Application</button>
             </form>
         </div>
     </div>
