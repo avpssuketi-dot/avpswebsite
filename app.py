@@ -1516,6 +1516,7 @@ def setup_database():
 
         from sqlalchemy import text
 
+        # inquiry table me address column add
         try:
             db.session.execute(
                 text("ALTER TABLE inquiry ADD COLUMN address VARCHAR(255);")
@@ -1524,9 +1525,21 @@ def setup_database():
             print("✅ address column added")
         except Exception as e:
             db.session.rollback()
-            print("⚠️ Column may already exist:", e)
+            print("⚠️ Address column may already exist:", e)
+
+        # users table me password field size increase
+        try:
+            db.session.execute(
+                text("ALTER TABLE users ALTER COLUMN password TYPE VARCHAR(300);")
+            )
+            db.session.commit()
+            print("✅ Password column updated")
+        except Exception as e:
+            db.session.rollback()
+            print("⚠️ Password column may already be updated:", e)
 
         print("✅ Database tables initialized!")
+
 setup_database()
 
 if __name__ == "__main__":
