@@ -1493,4 +1493,4 @@ if __name__ == "__main__":
         print("✅ Database tables initialized!")
     
     # Localhost par dev server chalaane ke liye
-    app.run(debug=True)
+    app.run(debug=False)
