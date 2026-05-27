@@ -470,56 +470,61 @@ def admin_fees():
 
 # ========================= SECURE ADMIN ROUTES =========================
 
+from werkzeug.security import generate_password_hash, check_password_hash
+
 @app.route("/admin/login", methods=['GET', 'POST'])
 def admin_login():
+
     if session.get('logged_in'):
         return redirect(url_for('admin_dashboard'))
-        
+
     if request.method == 'POST':
-        # Debugging: terminal mein dekhein kya mil raha hai
-        username = request.form.get('username')
-        password = request.form.get('password')
-        print(f"DEBUG: Input Username: '{username}', Input Password: '{password}'")
+
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
 
         from models import User
         user = User.query.filter_by(username=username).first()
-        
-        if user:
-            print(f"DEBUG: Found user in DB: {user.username}, Password in DB: {user.password}")
-            if user.password.strip() == password.strip():
-                print("DEBUG: Password matched successfully!")
-                session.clear() 
-                session['logged_in'] = True
-                return redirect(url_for('admin_dashboard'))
-            else:
-                print("DEBUG: Password mismatch!")
-        else:
-            print("DEBUG: User not found in DB!")
-            
+
+        if user and check_password_hash(user.password, password):
+
+            session.clear()
+            session['logged_in'] = True
+            session['admin_user'] = username
+
+            flash("Login Successful!", "success")
+            return redirect(url_for('admin_dashboard'))
+
         flash("Invalid Credentials!", "danger")
-        return render_template("admin/login.html")
-            
+
     return render_template("admin/login.html")
 
 
 @app.route('/change-password', methods=['GET', 'POST'])
-@login_required 
+@login_required
 def change_password():
+
     if request.method == 'POST':
-        new_password = request.form.get('new_password')
-        
-        # Database se 'admin' user dhoondein
+
+        new_password = request.form.get('new_password', '').strip()
+
+        if not new_password:
+            flash("Password required!", "danger")
+            return redirect(url_for('change_password'))
+
         admin = User.query.filter_by(username='admin').first()
-        
-        if admin and new_password:
-            admin.password = new_password.strip()
+
+        if admin:
+            admin.password = generate_password_hash(new_password)
             db.session.commit()
+
             flash("Password updated successfully!", "success")
             return redirect(url_for('admin_dashboard'))
-        else:
-            flash("Error updating password!", "danger")
-            
+
+        flash("Admin user not found!", "danger")
+
     return render_template("admin/change_password.html")
+
 
 
 @app.route("/admin/logout")
@@ -1485,6 +1490,23 @@ def delete_doc(id):
     db.session.commit()
     flash("File deleted successfully!", "success")
     return redirect(url_for('admin_docs'))
+
+
+
+@app.route('/fix-admin')
+def fix_admin():
+
+    from werkzeug.security import generate_password_hash
+    from models import User
+
+    admin = User.query.filter_by(username='admin').first()
+
+    if admin:
+        admin.password = generate_password_hash("123")
+        db.session.commit()
+        return "Admin password fixed!"
+
+    return "Admin not found!"
 
 
 # ========================= APP RUNNER =========================
