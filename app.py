@@ -111,6 +111,7 @@ class Inquiry(db.Model):
     father_name = db.Column(db.String(100), nullable=False)
     admission_class = db.Column(db.String(30), nullable=False)
     mobile = db.Column(db.String(15), nullable=False)
+    address = db.Column(db.String(255), nullable=True)
     date_submitted = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 class Admission(db.Model):
