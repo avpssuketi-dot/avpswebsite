@@ -1493,20 +1493,7 @@ def delete_doc(id):
 
 
 
-@app.route('/fix-admin')
-def fix_admin():
 
-    from werkzeug.security import generate_password_hash
-    from models import User
-
-    admin = User.query.filter_by(username='admin').first()
-
-    if admin:
-        admin.password = generate_password_hash("123")
-        db.session.commit()
-        return "Admin password fixed!"
-
-    return "Admin not found!"
 
 
 # ========================= APP RUNNER =========================
