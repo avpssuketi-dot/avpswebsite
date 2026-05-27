@@ -1488,13 +1488,23 @@ def delete_doc(id):
 
 
 # ========================= APP RUNNER =========================
-# app.py ke andar
-
 def setup_database():
     with app.app_context():
         db.create_all()
-        print("✅ Database tables initialized!")
 
+        from sqlalchemy import text
+
+        try:
+            db.session.execute(
+                text("ALTER TABLE inquiry ADD COLUMN address VARCHAR(255);")
+            )
+            db.session.commit()
+            print("✅ address column added")
+        except Exception as e:
+            db.session.rollback()
+            print("⚠️ Column may already exist:", e)
+
+        print("✅ Database tables initialized!")
 setup_database()
 
 if __name__ == "__main__":
