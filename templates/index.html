@@ -124,8 +124,9 @@
         {% for video in videos %}
         <div class="modern-card">
             <h4 style="margin-bottom:10px;">{{ video.title }}</h4>
-            <iframe width="100%" height="200" src="https://www.youtube.com/embed/{% if 'youtu.be/' in video.video_url %}{{ video.video_url.split('youtu.be/')[-1].split('?')[0] }}{% elif 'v=' in video.video_url %}{{ video.video_url.split('v=')[-1].split('&')[0] }}{% else %}{{ video.video_url.split('/')[-1] }}{% endif %}" frameborder="0" allowfullscreen style="border-radius:10px;"></iframe>
-        </div>
+            <div style="border-radius:10px; overflow:hidden;">
+    {{ video.embed_code | safe }}
+</div>
         {% endfor %}
     </div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; max-width: 1200px; margin: 40px auto 0;">
