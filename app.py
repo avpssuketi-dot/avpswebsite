@@ -1532,15 +1532,15 @@ def delete_doc(id):
 # ========================= APP RUNNER =========================
 
 
+
+
+
 import os
 from sqlalchemy import text, inspect
 
 def setup_database():
     with app.app_context():
 
-        # -----------------------------
-        # CREATE TABLES (SAFE)
-        # -----------------------------
         db.create_all()
 
         engine = db.engine
@@ -1554,34 +1554,21 @@ def setup_database():
                 return False
             return column_name in [c["name"] for c in inspector.get_columns(table_name)]
 
-        # -----------------------------
-        # INQUIRY TABLE FIX
-        # -----------------------------
+        # INQUIRY FIX
         if table_exists("inquiry") and not column_exists("inquiry", "address"):
-            try:
-                with engine.begin() as conn:
-                    conn.execute(text(
-                        "ALTER TABLE inquiry ADD COLUMN address VARCHAR(255)"
-                    ))
-                print("✅ Added 'address' column to inquiry")
-            except Exception as e:
-                print("⚠️ inquiry alter skipped:", e)
+            with engine.begin() as conn:
+                conn.execute(text("ALTER TABLE inquiry ADD COLUMN address VARCHAR(255)"))
 
-        # -----------------------------
-        # VIDEO TABLE FIX
-        # -----------------------------
+        # VIDEO FIX (IMPORTANT FOR YOUR ERROR)
+        if table_exists("video") and not column_exists("video", "video_type"):
+            with engine.begin() as conn:
+                conn.execute(text("ALTER TABLE video ADD COLUMN video_type VARCHAR(50)"))
+
         if table_exists("video") and not column_exists("video", "embed_code"):
-            try:
-                with engine.begin() as conn:
-                    conn.execute(text(
-                        "ALTER TABLE video ADD COLUMN embed_code TEXT"
-                    ))
-                print("✅ Added 'embed_code' column to video")
-            except Exception as e:
-                print("⚠️ video alter skipped:", e)
+            with engine.begin() as conn:
+                conn.execute(text("ALTER TABLE video ADD COLUMN embed_code TEXT"))
 
-        print("✅ Database verification complete (safe mode)")
-
+        print("✅ Database verification complete")
 
 # -----------------------------
 # RUNNER (Render SAFE)
