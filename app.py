@@ -290,11 +290,11 @@ def manage_videos():
             db.session.rollback()
             flash(f"Database Error: {str(e)}", "danger")
             
+        # Is line ki wajah se page reload nahi hoga aur naya window nahi khulega
         return redirect(url_for('manage_videos'))
 
     videos = Video.query.all()
     return render_template('admin/videos.html', videos=videos)
-
 
 
 @app.route("/admin/media/videos/delete/<int:id>", methods=['POST'])
