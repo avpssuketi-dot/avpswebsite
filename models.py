@@ -129,28 +129,36 @@ class User(db.Model):
 
 
 from datetime import datetime, timezone
-# db ko yahan se direct import na karein
-# from app import db 
+from flask_sqlalchemy import SQLAlchemy
 
-# Lazy import ka use karein
-def get_db():
-    from app import db
-    return db
+# -----------------------------
+# SINGLE DB INSTANCE (IMPORTANT)
+# -----------------------------
+db = SQLAlchemy()
 
-db = get_db() # Reference ke liye
 
 class Video(db.Model):
     __tablename__ = 'video'
     __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.Integer, primary_key=True)
+
     title = db.Column(db.String(200), nullable=False)
+
+    # URL store karna MUST hai (tumhare system ke liye important)
+    video_url = db.Column(db.Text, nullable=True)
+
+    video_type = db.Column(db.String(50), nullable=True)
+
     embed_code = db.Column(db.Text, nullable=True)
-    date_added = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    date_added = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(timezone.utc)
+    )
 
     def __repr__(self):
         return f'<Video {self.title}>'
-
 
 class TCApplication(db.Model):
     id = db.Column(db.Integer, primary_key=True)

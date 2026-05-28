@@ -274,25 +274,46 @@ def manage_videos():
             return redirect(url_for('manage_videos'))
 
         try:
-            # 1. Default Video Type / Embed Logic
-            embed_code = f'<video width="100%" controls><source src="{url}" type="video/mp4"></video>'
+            # -----------------------------
+            # Detect Video Type
+            # -----------------------------
+            video_type = "mp4"
+            embed_code = ""
 
-            # 2. Logic for YouTube/Facebook
+            # YouTube
             if "youtube.com" in url or "youtu.be" in url:
-                video_id = url.split('/')[-1].split('v=')[-1].split('?')[0]
+                video_type = "youtube"
+
+                if "youtu.be" in url:
+                    video_id = url.split("youtu.be/")[-1].split("?")[0]
+                else:
+                    video_id = url.split("v=")[-1].split("&")[0]
+
                 embed_code = f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
 
+            # Facebook
             elif "facebook.com" in url or "fb.watch" in url:
-                embed_code = f'<iframe src="https://www.facebook.com/plugins/video.php?href={url}&show_text=0&width=560" width="100%" height="315" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true"></iframe>'
+                video_type = "facebook"
+                embed_code = f'<iframe src="https://www.facebook.com/plugins/video.php?href={url}&show_text=0" width="100%" height="315" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen></iframe>'
 
-            # 3. Save to Database: Sirf model mein मौजूद columns pass karein
+            # MP4 direct video
+            else:
+                video_type = "mp4"
+                embed_code = f'<video width="100%" controls><source src="{url}" type="video/mp4"></video>'
+
+            # -----------------------------
+            # SAVE TO DATABASE (IMPORTANT FIX)
+            # -----------------------------
             new_video = Video(
                 title=title,
+                video_url=url,        # ✅ IMPORTANT (missing fix)
+                video_type=video_type,
                 embed_code=embed_code
             )
 
             db.session.add(new_video)
             db.session.commit()
+
             flash("Video added successfully!", "success")
 
         except Exception as e:
@@ -301,10 +322,9 @@ def manage_videos():
 
         return redirect(url_for('manage_videos'))
 
-    # GET Request: Fetch all videos
+    # GET
     videos = Video.query.order_by(Video.id.desc()).all()
     return render_template("admin/videos.html", videos=videos)
-
 
 
 
@@ -1539,45 +1559,57 @@ from sqlalchemy import text, inspect
 
 def setup_database():
     with app.app_context():
-        # 1. Basic tables create karein
+
+        # 1. Create tables
         db.create_all()
-        
+
         engine = db.engine
         inspector = inspect(engine)
 
+        def table_exists(table_name):
+            return inspector.has_table(table_name)
+
         def column_exists(table_name, column_name):
-            # Inspector ka use karke column check karein
-            if not inspector.has_table(table_name):
+            if not table_exists(table_name):
                 return False
-            columns = [c["name"] for c in inspector.get_columns(table_name)]
-            return column_name in columns
+            return column_name in [c["name"] for c in inspector.get_columns(table_name)]
 
-        # 2. Schema updates (Safe Check)
-        # Inquiry table
-        if not column_exists("inquiry", "address"):
+        # -----------------------------
+        # INQUIRY TABLE FIX
+        # -----------------------------
+        if table_exists("inquiry") and not column_exists("inquiry", "address"):
             try:
-                with engine.connect() as conn:
-                    conn.execute(text("ALTER TABLE inquiry ADD COLUMN address VARCHAR(255)"))
-                    conn.commit()
-                print("✅ Added 'address' column to inquiry table")
+                with engine.begin() as conn:
+                    conn.execute(text("""
+                        ALTER TABLE inquiry 
+                        ADD COLUMN address VARCHAR(255)
+                    """))
+                print("✅ Added 'address' column to inquiry")
             except Exception as e:
-                print(f"❌ Error adding column 'address': {e}")
+                print("❌ inquiry alter error:", e)
 
-        # Video table - Embed Code
-        if not column_exists("video", "embed_code"):
+        # -----------------------------
+        # VIDEO TABLE FIX
+        # -----------------------------
+        if table_exists("video") and not column_exists("video", "embed_code"):
             try:
-                with engine.connect() as conn:
-                    conn.execute(text("ALTER TABLE video ADD COLUMN embed_code TEXT"))
-                    conn.commit()
-                print("✅ Added 'embed_code' column to video table")
+                with engine.begin() as conn:
+                    conn.execute(text("""
+                        ALTER TABLE video 
+                        ADD COLUMN embed_code TEXT
+                    """))
+                print("✅ Added 'embed_code' column to video")
             except Exception as e:
-                print(f"❌ Error adding column 'embed_code': {e}")
+                print("❌ video alter error:", e)
 
         print("✅ Database verification complete")
 
-# Main run loop
+
+# -----------------------------
+# RUNNER (Render safe)
+# -----------------------------
 if __name__ == "__main__":
     setup_database()
-    # Gunicorn production mein use hota hai, app.run() sirf local testing ke liye hai
+
     port = int(os.environ.get("PORT", 10000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=False)
