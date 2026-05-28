@@ -265,44 +265,36 @@ def delete_gallery_image(id):
 
 # ========================= VIDEO MANAGEMENT ROUTES =========================
 
-# Helper Function (Isse route ke bahar rakhein)
-def get_embed_html(url):
-    if "youtube.com" in url or "youtu.be" in url:
-        video_id = url.split("v=")[-1].split("&")[0] if "v=" in url else url.split("youtu.be/")[-1].split("?")[0]
-        return "youtube", f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
-    
-    elif "facebook.com" in url or "fb.watch" in url:
-        return "facebook", f'<iframe src="https://www.facebook.com/plugins/video.php?href={url}&show_text=0" width="100%" height="315" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen></iframe>'
-    
-    return "mp4", f'<video width="100%" controls><source src="{url}" type="video/mp4"></video>'
-
-# Updated Route
-@app.route("/admin/media/videos", methods=['GET', 'POST'])
-@login_required
+@app.route('/manage_videos', methods=['GET', 'POST'])
 def manage_videos():
+    # Admin login check (agar aapne lagaya hai toh)
+    # if 'admin_logged_in' not in session: return redirect(url_for('admin_login'))
+    
     if request.method == 'POST':
-        title = request.form.get('title', '').strip()
-        url = request.form.get('video_url', '').strip()
-
-        if not title or not url:
+        # Yahan hum form se data nikal rahe hain
+        title = request.form.get('title')
+        video_url = request.form.get('video_url')
+        
+        # Validation check
+        if not title or not video_url:
             flash("Title and URL required!", "danger")
             return redirect(url_for('manage_videos'))
 
-        video_type, embed_code = get_embed_html(url)
-
+        # Database mein save karna
         try:
-            new_video = Video(title=title, video_url=url, video_type=video_type, embed_code=embed_code)
+            # Hum direct video_url save kar rahe hain taaki koi complication na ho
+            new_video = Video(title=title, embed_code=video_url)
             db.session.add(new_video)
             db.session.commit()
             flash("Video added successfully!", "success")
         except Exception as e:
-            db.session.rollback()
-            flash(f"Error: {str(e)}", "danger")
-
+            flash(f"Database Error: {str(e)}", "danger")
+            
         return redirect(url_for('manage_videos'))
 
-    videos = Video.query.order_by(Video.date_added.desc()).all()
-    return render_template("admin/videos.html", videos=videos)
+    # GET request: Videos list dikhana
+    videos = Video.query.all()
+    return render_template('manage_videos.html', videos=videos)
 
 
 
