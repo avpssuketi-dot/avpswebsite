@@ -126,9 +126,10 @@ class User(db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False)
     password = db.Column(db.String(300), nullable=False)
 
-# Yeh aapki models.py mein hona chahiye
+
+
 from datetime import datetime, timezone
-from app import db # ya jahan bhi aapka db define hai
+from app import db 
 
 class Video(db.Model):
     __tablename__ = 'video'
@@ -142,7 +143,7 @@ class Video(db.Model):
     date_added = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def __repr__(self):
-        return f'<Video {self.title}>'    )
+        return f'<Video {self.title}>'
 
 
 class TCApplication(db.Model):
