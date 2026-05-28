@@ -137,7 +137,7 @@ class Video(db.Model):
 
     # Old: video_url
     # New: embed_code
-    embed_code = db.Column(db.Text, nullable=False)
+    embed_code = db.Column(db.Text, nullable=True)
 
     date_added = db.Column(
         db.DateTime,
