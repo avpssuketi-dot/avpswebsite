@@ -265,25 +265,57 @@ def delete_gallery_image(id):
 @app.route("/admin/media/videos", methods=['GET', 'POST'])
 @login_required
 def manage_videos():
+
     if request.method == 'POST':
-        title = request.form.get('title')
-        url = request.form.get('video_url')
-        new_video = Video(title=title, video_url=url)
+
+        title = request.form.get('title', '').strip()
+        url = request.form.get('video_url', '').strip()
+
+        if not title or not url:
+            flash("Title and Video URL required!", "danger")
+            return redirect(url_for('manage_videos'))
+
+        # -------- AUTO VIDEO TYPE DETECTION --------
+        video_type = "mp4"
+
+        if "youtube.com" in url or "youtu.be" in url:
+            video_type = "youtube"
+
+        elif "facebook.com" in url or "fb.watch" in url:
+            video_type = "facebook"
+
+        # -------- SAVE VIDEO --------
+        new_video = Video(
+            title=title,
+            video_url=url,
+            video_type=video_type
+        )
+
         db.session.add(new_video)
         db.session.commit()
+
         flash("Video added successfully!", "success")
         return redirect(url_for('manage_videos'))
-    
-    videos = Video.query.all()
-    return render_template("admin/videos.html", videos=videos)
+
+    videos = Video.query.order_by(Video.id.desc()).all()
+
+    return render_template(
+        "admin/videos.html",
+        videos=videos
+    )
+
 
 @app.route("/admin/media/videos/delete/<int:id>", methods=['POST'])
 @login_required
 def delete_video(id):
+
     video = Video.query.get_or_404(id)
+
     db.session.delete(video)
     db.session.commit()
+
     flash("Video deleted successfully!", "success")
+
     return redirect(url_for('manage_videos'))
 
 # ========================= UPDATED NOTICE ROUTE (With Image) =========================
@@ -1497,35 +1529,54 @@ def delete_doc(id):
 
 
 # ========================= APP RUNNER =========================
+
+
 def setup_database():
+
     with app.app_context():
+
         db.create_all()
 
         from sqlalchemy import text
 
-        # inquiry table me address column add
+        # inquiry table -> address column
         try:
             db.session.execute(
-                text("ALTER TABLE inquiry ADD COLUMN address VARCHAR(255);")
+                text(
+                    "ALTER TABLE inquiry ADD COLUMN address VARCHAR(255);"
+                )
             )
             db.session.commit()
-            print("✅ address column added")
-        except Exception as e:
-            db.session.rollback()
-            print("⚠️ Address column may already exist:", e)
 
-        # users table me password field size increase
+        except Exception:
+            db.session.rollback()
+
+        # users table -> password length increase
         try:
             db.session.execute(
-                text("ALTER TABLE users ALTER COLUMN password TYPE VARCHAR(300);")
+                text(
+                    "ALTER TABLE users ALTER COLUMN password TYPE VARCHAR(300);"
+                )
             )
             db.session.commit()
-            print("✅ Password column updated")
-        except Exception as e:
-            db.session.rollback()
-            print("⚠️ Password column may already be updated:", e)
 
-        print("✅ Database tables initialized!")
+        except Exception:
+            db.session.rollback()
+
+        # video table -> embed_code column
+        try:
+            db.session.execute(
+                text(
+                    "ALTER TABLE video ADD COLUMN embed_code TEXT;"
+                )
+            )
+            db.session.commit()
+
+        except Exception:
+            db.session.rollback()
+
+        print("✅ Database initialized successfully")
+
 
 setup_database()
 

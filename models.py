@@ -130,10 +130,19 @@ class User(db.Model):
 class Video(db.Model):
     __tablename__ = 'video'
     __table_args__ = {'extend_existing': True}
+
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    video_url = db.Column(db.String(200), nullable=False)
-    date_added = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    title = db.Column(db.String(200), nullable=False)
+
+    # Old: video_url
+    # New: embed_code
+    embed_code = db.Column(db.Text, nullable=False)
+
+    date_added = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class TCApplication(db.Model):
