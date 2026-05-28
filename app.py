@@ -1560,7 +1560,9 @@ from sqlalchemy import text, inspect
 def setup_database():
     with app.app_context():
 
-        # 1. Create tables
+        # -----------------------------
+        # CREATE TABLES (SAFE)
+        # -----------------------------
         db.create_all()
 
         engine = db.engine
@@ -1580,13 +1582,12 @@ def setup_database():
         if table_exists("inquiry") and not column_exists("inquiry", "address"):
             try:
                 with engine.begin() as conn:
-                    conn.execute(text("""
-                        ALTER TABLE inquiry 
-                        ADD COLUMN address VARCHAR(255)
-                    """))
+                    conn.execute(text(
+                        "ALTER TABLE inquiry ADD COLUMN address VARCHAR(255)"
+                    ))
                 print("✅ Added 'address' column to inquiry")
             except Exception as e:
-                print("❌ inquiry alter error:", e)
+                print("⚠️ inquiry alter skipped:", e)
 
         # -----------------------------
         # VIDEO TABLE FIX
@@ -1594,22 +1595,22 @@ def setup_database():
         if table_exists("video") and not column_exists("video", "embed_code"):
             try:
                 with engine.begin() as conn:
-                    conn.execute(text("""
-                        ALTER TABLE video 
-                        ADD COLUMN embed_code TEXT
-                    """))
+                    conn.execute(text(
+                        "ALTER TABLE video ADD COLUMN embed_code TEXT"
+                    ))
                 print("✅ Added 'embed_code' column to video")
             except Exception as e:
-                print("❌ video alter error:", e)
+                print("⚠️ video alter skipped:", e)
 
-        print("✅ Database verification complete")
+        print("✅ Database verification complete (safe mode)")
 
 
 # -----------------------------
-# RUNNER (Render safe)
+# RUNNER (Render SAFE)
 # -----------------------------
 if __name__ == "__main__":
     setup_database()
 
+    # Render dynamic port binding
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port, debug=False)
