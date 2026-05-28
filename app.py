@@ -1538,9 +1538,11 @@ def delete_doc(id):
 import os
 from sqlalchemy import text, inspect
 
+# --- Database Setup Helper ---
 def setup_database():
     with app.app_context():
 
+        # create tables first
         db.create_all()
 
         engine = db.engine
@@ -1554,28 +1556,43 @@ def setup_database():
                 return False
             return column_name in [c["name"] for c in inspector.get_columns(table_name)]
 
-        # INQUIRY FIX
-        if table_exists("inquiry") and not column_exists("inquiry", "address"):
-            with engine.begin() as conn:
-                conn.execute(text("ALTER TABLE inquiry ADD COLUMN address VARCHAR(255)"))
+        # -----------------------------
+        # SAFE COLUMN UPDATES LIST
+        # -----------------------------
+        updates = [
+            ("inquiry", "address", "VARCHAR(255)"),
+            ("video", "video_type", "VARCHAR(50)"),
+            ("video", "embed_code", "TEXT"),
+        ]
 
-        # VIDEO FIX (IMPORTANT FOR YOUR ERROR)
-        if table_exists("video") and not column_exists("video", "video_type"):
-            with engine.begin() as conn:
-                conn.execute(text("ALTER TABLE video ADD COLUMN video_type VARCHAR(50)"))
+        # -----------------------------
+        # APPLY MIGRATIONS SAFELY
+        # -----------------------------
+        with engine.begin() as conn:
+            for table, col, col_type in updates:
 
-        if table_exists("video") and not column_exists("video", "embed_code"):
-            with engine.begin() as conn:
-                conn.execute(text("ALTER TABLE video ADD COLUMN embed_code TEXT"))
+                if table_exists(table) and not column_exists(table, col):
+                    try:
+                        conn.execute(
+                            text(f"ALTER TABLE {table} ADD COLUMN {col} {col_type}")
+                        )
+                        print(f"✅ Added column {col} to {table}")
 
-        print("✅ Database verification complete")
+                    except Exception as e:
+                        print(f"⚠️ Failed adding {col} to {table}: {e}")
+
+        print("✅ Database verification complete (safe mode)")
+
 
 # -----------------------------
-# RUNNER (Render SAFE)
+# CALL ON START (IMPORTANT)
+# -----------------------------
+setup_database()
+
+
+# -----------------------------
+# RUNNER (Render safe)
 # -----------------------------
 if __name__ == "__main__":
-    setup_database()
-
-    # Render dynamic port binding
     port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=False)    app.run(host="0.0.0.0", port=port, debug=False)
