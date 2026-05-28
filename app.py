@@ -294,7 +294,7 @@ def manage_videos():
 
     # GET request: Videos list dikhana
     videos = Video.query.all()
-    return render_template('manage_videos.html', videos=videos)
+    return render_template('admin/videos.html', videos=videos)
 
 
 
