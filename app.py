@@ -262,6 +262,18 @@ def delete_gallery_image(id):
 
 # ========================= VIDEO MANAGEMENT ROUTES =========================
 
+# Helper Function (Isse route ke bahar rakhein)
+def get_embed_html(url):
+    if "youtube.com" in url or "youtu.be" in url:
+        video_id = url.split("v=")[-1].split("&")[0] if "v=" in url else url.split("youtu.be/")[-1].split("?")[0]
+        return "youtube", f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
+    
+    elif "facebook.com" in url or "fb.watch" in url:
+        return "facebook", f'<iframe src="https://www.facebook.com/plugins/video.php?href={url}&show_text=0" width="100%" height="315" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen></iframe>'
+    
+    return "mp4", f'<video width="100%" controls><source src="{url}" type="video/mp4"></video>'
+
+# Updated Route
 @app.route("/admin/media/videos", methods=['GET', 'POST'])
 @login_required
 def manage_videos():
@@ -270,60 +282,23 @@ def manage_videos():
         url = request.form.get('video_url', '').strip()
 
         if not title or not url:
-            flash("Title and Video URL required!", "danger")
+            flash("Title and URL required!", "danger")
             return redirect(url_for('manage_videos'))
 
+        video_type, embed_code = get_embed_html(url)
+
         try:
-            # -----------------------------
-            # Detect Video Type
-            # -----------------------------
-            video_type = "mp4"
-            embed_code = ""
-
-            # YouTube
-            if "youtube.com" in url or "youtu.be" in url:
-                video_type = "youtube"
-
-                if "youtu.be" in url:
-                    video_id = url.split("youtu.be/")[-1].split("?")[0]
-                else:
-                    video_id = url.split("v=")[-1].split("&")[0]
-
-                embed_code = f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
-
-            # Facebook
-            elif "facebook.com" in url or "fb.watch" in url:
-                video_type = "facebook"
-                embed_code = f'<iframe src="https://www.facebook.com/plugins/video.php?href={url}&show_text=0" width="100%" height="315" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen></iframe>'
-
-            # MP4 direct video
-            else:
-                video_type = "mp4"
-                embed_code = f'<video width="100%" controls><source src="{url}" type="video/mp4"></video>'
-
-            # -----------------------------
-            # SAVE TO DATABASE (IMPORTANT FIX)
-            # -----------------------------
-            new_video = Video(
-                title=title,
-                video_url=url,        # ✅ IMPORTANT (missing fix)
-                video_type=video_type,
-                embed_code=embed_code
-            )
-
+            new_video = Video(title=title, video_url=url, video_type=video_type, embed_code=embed_code)
             db.session.add(new_video)
             db.session.commit()
-
             flash("Video added successfully!", "success")
-
         except Exception as e:
             db.session.rollback()
-            flash(f"Error saving video: {str(e)}", "danger")
+            flash(f"Error: {str(e)}", "danger")
 
         return redirect(url_for('manage_videos'))
 
-    # GET
-    videos = Video.query.order_by(Video.id.desc()).all()
+    videos = Video.query.order_by(Video.date_added.desc()).all()
     return render_template("admin/videos.html", videos=videos)
 
 

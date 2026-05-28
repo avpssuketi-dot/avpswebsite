@@ -131,41 +131,34 @@ class User(db.Model):
 from datetime import datetime, timezone
 from flask_sqlalchemy import SQLAlchemy
 
-# -----------------------------
-# SINGLE DB INSTANCE
-# -----------------------------
+# 1. db instance yahan define karein (app se import na karein)
 db = SQLAlchemy()
 
-
-# -----------------------------
-# VIDEO MODEL
-# -----------------------------
+# 2. Video Model
 class Video(db.Model):
     __tablename__ = 'video'
     __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.Integer, primary_key=True)
-
     title = db.Column(db.String(200), nullable=False)
-
-    # original URL (YouTube / FB / MP4)
+    
+    # Original URL (YouTube / FB / MP4)
     video_url = db.Column(db.Text, nullable=True)
-
+    
     # youtube / facebook / mp4
     video_type = db.Column(db.String(50), nullable=True)
-
-    # rendered embed HTML
+    
+    # Rendered embed HTML
     embed_code = db.Column(db.Text, nullable=True)
-
+    
     date_added = db.Column(
-        db.DateTime,
-        default=lambda: datetime.now(timezone.utc),
+        db.DateTime, 
+        default=lambda: datetime.now(timezone.utc), 
         nullable=False
     )
 
     def __repr__(self):
         return f"<Video {self.title}>"
-
 
 
 class TCApplication(db.Model):
