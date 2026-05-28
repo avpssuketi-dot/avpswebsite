@@ -267,34 +267,35 @@ def delete_gallery_image(id):
 
 @app.route('/manage_videos', methods=['GET', 'POST'])
 def manage_videos():
+    # Admin login check (agar aapne lagaya hai toh)
+    # if 'admin_logged_in' not in session: return redirect(url_for('admin_login'))
+    
     if request.method == 'POST':
+        # Yahan hum form se data nikal rahe hain
         title = request.form.get('title')
         video_url = request.form.get('video_url')
         
+        # Validation check
         if not title or not video_url:
             flash("Title and URL required!", "danger")
             return redirect(url_for('manage_videos'))
 
+        # Database mein save karna
         try:
-            # Har column ko value dena zaroori hai (NotNullViolation se bachne ke liye)
-            new_video = Video(
-                title=title, 
-                video_url=video_url,      # Column 1
-                embed_code=video_url,     # Column 2
-                video_type='youtube'      # Column 3 (Default value)
-            )
+            # Hum direct video_url save kar rahe hain taaki koi complication na ho
+            new_video = Video(title=title, embed_code=video_url)
             db.session.add(new_video)
             db.session.commit()
             flash("Video added successfully!", "success")
         except Exception as e:
-            db.session.rollback()
             flash(f"Database Error: {str(e)}", "danger")
             
-        # Is line ki wajah se page reload nahi hoga aur naya window nahi khulega
         return redirect(url_for('manage_videos'))
 
+    # GET request: Videos list dikhana
     videos = Video.query.all()
     return render_template('admin/videos.html', videos=videos)
+
 
 
 @app.route("/admin/media/videos/delete/<int:id>", methods=['POST'])
