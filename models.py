@@ -129,7 +129,15 @@ class User(db.Model):
 
 
 from datetime import datetime, timezone
-from app import db 
+# db ko yahan se direct import na karein
+# from app import db 
+
+# Lazy import ka use karein
+def get_db():
+    from app import db
+    return db
+
+db = get_db() # Reference ke liye
 
 class Video(db.Model):
     __tablename__ = 'video'
@@ -137,9 +145,7 @@ class Video(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
-    # URL ko convert karke yahan save karenge
     embed_code = db.Column(db.Text, nullable=True)
-    # Default time ke liye sahi format
     date_added = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def __repr__(self):

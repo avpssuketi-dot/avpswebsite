@@ -1534,47 +1534,50 @@ def delete_doc(id):
 # ========================= APP RUNNER =========================
 
 
+import os
 from sqlalchemy import text, inspect
 
 def setup_database():
     with app.app_context():
-        # 1. Sabse pehle basic tables create karein
+        # 1. Basic tables create karein
         db.create_all()
         
         engine = db.engine
         inspector = inspect(engine)
 
-        def column_exists(table, column):
-            # Agar table hi exist nahi karti
-            if table not in inspector.get_table_names():
+        def column_exists(table_name, column_name):
+            # Inspector ka use karke column check karein
+            if not inspector.has_table(table_name):
                 return False
-            columns = [c["name"] for c in inspector.get_columns(table)]
-            return column in columns
+            columns = [c["name"] for c in inspector.get_columns(table_name)]
+            return column_name in columns
 
-        # ---------------- INQUIRY ----------------
+        # 2. Schema updates (Safe Check)
+        # Inquiry table
         if not column_exists("inquiry", "address"):
             try:
-                db.session.execute(text("ALTER TABLE inquiry ADD COLUMN address VARCHAR(255)"))
-                db.session.commit()
+                with engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE inquiry ADD COLUMN address VARCHAR(255)"))
+                    conn.commit()
                 print("✅ Added 'address' column to inquiry table")
             except Exception as e:
-                db.session.rollback()
                 print(f"❌ Error adding column 'address': {e}")
 
-        # ---------------- VIDEO ----------------
+        # Video table - Embed Code
         if not column_exists("video", "embed_code"):
             try:
-                db.session.execute(text("ALTER TABLE video ADD COLUMN embed_code TEXT"))
-                db.session.commit()
+                with engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE video ADD COLUMN embed_code TEXT"))
+                    conn.commit()
                 print("✅ Added 'embed_code' column to video table")
             except Exception as e:
-                db.session.rollback()
                 print(f"❌ Error adding column 'embed_code': {e}")
 
         print("✅ Database verification complete")
 
-# Run only once when script starts
+# Main run loop
 if __name__ == "__main__":
     setup_database()
+    # Gunicorn production mein use hota hai, app.run() sirf local testing ke liye hai
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port, debug=False)
