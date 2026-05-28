@@ -1,8 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file, session
-import sqlite3
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from datetime import datetime, timezone
 import os
 import io
 import urllib.parse
@@ -10,12 +6,16 @@ import pandas as pd
 from functools import wraps
 from werkzeug.utils import secure_filename
 from sqlalchemy import func
+from datetime import datetime, timezone
 
-# Cloudinary Import (Isse add karna zaroori hai!)
+# Database and App Imports
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from models import db
+
+# Cloudinary & Third Party Imports
 import cloudinary
 import cloudinary.uploader
-
-# ReportLab Imports
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
@@ -23,22 +23,13 @@ from reportlab.lib.units import cm
 from reportlab.platypus import Table, TableStyle, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 
-
 # ========================= App & DB Setup =========================
-
-import os
-import cloudinary
-from flask import Flask
-from flask_migrate import Migrate  # 1. Import Migrate
-from models import db 
 
 app = Flask(__name__)
 app.secret_key = 'kuch_bhi_secret_string_yahan_likho'
 
 # --- DATABASE CONFIGURATION ---
 db_url = os.environ.get('DATABASE_URL')
-
-# Postgres URL fix
 if db_url and db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
 
@@ -47,19 +38,21 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # --- CLOUDINARY CONFIGURATION ---
 cloudinary.config(
-    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME', 'djjvsvvy8'),
-    api_key = os.environ.get('CLOUDINARY_API_KEY', '465926195419728'),
-    api_secret = os.environ.get('CLOUDINARY_API_SECRET')
+    cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME', 'djjvsvvy8'),
+    api_key=os.environ.get('CLOUDINARY_API_KEY', '465926195419728'),
+    api_secret=os.environ.get('CLOUDINARY_API_SECRET')
 )
 
-# 2. DB aur Migrate ko App ke saath bind karein
+# Bind DB and Migrate
 db.init_app(app)
 migrate = Migrate(app, db)
 
-# 3. Models import karein
-from models import Result, Admission, Inquiry, Notice, GalleryImage, Fee, FeeDeposit, User, Video, Inquiry, TCApplication, BonafideRequest, Admission, Inquiry, Result, DownloadableDoc
+# Import Models AFTER initialization to avoid circular imports
+from models import (Result, Admission, Notice, GalleryImage, Fee, 
+                    FeeDeposit, User, Video, Inquiry, TCApplication, 
+                    BonafideRequest, DownloadableDoc)
 
-# 4. Tables Create karein aur Admin setup
+# Tables Create and Admin Setup
 with app.app_context():
     db.create_all()
     
@@ -70,7 +63,6 @@ with app.app_context():
         db.session.add(new_admin)
         db.session.commit()
         print("--- Admin user created successfully ---")
-
 
 # ========================= SECURITY SHIELD =========================
 from functools import wraps

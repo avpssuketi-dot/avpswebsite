@@ -131,8 +131,6 @@ class User(db.Model):
 from datetime import datetime, timezone
 from flask_sqlalchemy import SQLAlchemy
 
-# 1. db instance yahan define karein (app se import na karein)
-db = SQLAlchemy()
 
 # 2. Video Model
 class Video(db.Model):
