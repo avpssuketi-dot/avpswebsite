@@ -1531,54 +1531,47 @@ def delete_doc(id):
 # ========================= APP RUNNER =========================
 
 
+from sqlalchemy import text, inspect
+
 def setup_database():
-
     with app.app_context():
-
+        # 1. Sabse pehle basic tables create karein
         db.create_all()
+        
+        engine = db.engine
+        inspector = inspect(engine)
 
-        from sqlalchemy import text
+        def column_exists(table, column):
+            # Agar table hi exist nahi karti
+            if table not in inspector.get_table_names():
+                return False
+            columns = [c["name"] for c in inspector.get_columns(table)]
+            return column in columns
 
-        # inquiry table -> address column
-        try:
-            db.session.execute(
-                text(
-                    "ALTER TABLE inquiry ADD COLUMN address VARCHAR(255);"
-                )
-            )
-            db.session.commit()
+        # ---------------- INQUIRY ----------------
+        if not column_exists("inquiry", "address"):
+            try:
+                db.session.execute(text("ALTER TABLE inquiry ADD COLUMN address VARCHAR(255)"))
+                db.session.commit()
+                print("✅ Added 'address' column to inquiry table")
+            except Exception as e:
+                db.session.rollback()
+                print(f"❌ Error adding column 'address': {e}")
 
-        except Exception:
-            db.session.rollback()
+        # ---------------- VIDEO ----------------
+        if not column_exists("video", "embed_code"):
+            try:
+                db.session.execute(text("ALTER TABLE video ADD COLUMN embed_code TEXT"))
+                db.session.commit()
+                print("✅ Added 'embed_code' column to video table")
+            except Exception as e:
+                db.session.rollback()
+                print(f"❌ Error adding column 'embed_code': {e}")
 
-        # users table -> password length increase
-        try:
-            db.session.execute(
-                text(
-                    "ALTER TABLE users ALTER COLUMN password TYPE VARCHAR(300);"
-                )
-            )
-            db.session.commit()
+        print("✅ Database verification complete")
 
-        except Exception:
-            db.session.rollback()
-
-        # video table -> embed_code column
-        try:
-            db.session.execute(
-                text(
-                    "ALTER TABLE video ADD COLUMN embed_code TEXT;"
-                )
-            )
-            db.session.commit()
-
-        except Exception:
-            db.session.rollback()
-
-        print("✅ Database initialized successfully")
-
-
-setup_database()
-
+# Run only once when script starts
 if __name__ == "__main__":
-    app.run(debug=False)
+    setup_database()
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port, debug=False)
