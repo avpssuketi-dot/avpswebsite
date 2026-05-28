@@ -3,6 +3,7 @@ import sqlite3
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime, timezone
+from urllib.parse import urlparse, parse_qs
 import os
 import io
 import urllib.parse
@@ -265,29 +266,58 @@ def delete_gallery_image(id):
 
 # ========================= VIDEO MANAGEMENT ROUTES =========================
 
+from flask import render_template, request, flash, redirect, url_for
+from urllib.parse import urlparse, parse_qs
+
 @app.route('/manage_videos', methods=['GET', 'POST'])
 def manage_videos():
-    # Admin login check (agar aapne lagaya hai toh)
-    # if 'admin_logged_in' not in session: return redirect(url_for('admin_login'))
-    
     if request.method == 'POST':
-        # Yahan hum form se data nikal rahe hain
-        title = request.form.get('title')
-        video_url = request.form.get('video_url')
+        title = request.form.get('title') or "Untitled Video"
+        input_data = request.form.get('video_url')
         
-        # Validation check
-        if not title or not video_url:
-            flash("Title and URL required!", "danger")
+        if not input_data:
+            flash("Video URL/Embed code is required!", "danger")
             return redirect(url_for('manage_videos'))
 
-        # Database mein save karna
+        # Embed code logic
+        if "<iframe" not in input_data.lower():
+            # YouTube URL processing using urllib.parse (Safer method)
+            parsed = urlparse(input_data)
+            video_id = None
+            
+            if 'youtube.com' in parsed.netloc:
+                video_id = parse_qs(parsed.query).get('v', [None])[0]
+            elif 'youtu.be' in parsed.netloc:
+                video_id = parsed.path.lstrip('/')
+            
+            if video_id:
+                embed_code = f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
+            else:
+                embed_code = f'<a href="{input_data}" target="_blank">Watch Video</a>'
+        else:
+            # Agar user ne pehle se iframe dala hai, to wahi save karo
+            embed_code = input_data
+
+        # Video Type Logic
+        if "<iframe" in input_data.lower():
+            v_type = 'embed'
+        elif "youtube" in input_data.lower() or "youtu.be" in input_data.lower():
+            v_type = 'youtube'
+        else:
+            v_type = 'link'
+
         try:
-            # Hum direct video_url save kar rahe hain taaki koi complication na ho
-            new_video = Video(title=title, embed_code=video_url)
+            new_video = Video(
+                title=title, 
+                video_url=input_data, 
+                embed_code=embed_code, 
+                video_type=v_type
+            )
             db.session.add(new_video)
             db.session.commit()
             flash("Video added successfully!", "success")
         except Exception as e:
+            db.session.rollback()
             flash(f"Database Error: {str(e)}", "danger")
             
         return redirect(url_for('manage_videos'))
@@ -295,6 +325,7 @@ def manage_videos():
     # GET request: Videos list dikhana
     videos = Video.query.all()
     return render_template('admin/videos.html', videos=videos)
+
 
 
 
