@@ -35,9 +35,7 @@ from models import db
 app = Flask(__name__)
 app.secret_key = 'kuch_bhi_secret_string_yahan_likho'
 
-with app.app_context():
-    db.drop_all()
-    db.create_all()
+
 
 
 # --- DATABASE CONFIGURATION ---
