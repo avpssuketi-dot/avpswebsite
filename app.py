@@ -263,7 +263,6 @@ def delete_gallery_image(id):
 # ========================= VIDEO MANAGEMENT ROUTES =========================
 
 @app.route("/admin/media/videos", methods=['GET', 'POST'])
-@app.route("/admin/media/videos", methods=['GET', 'POST'])
 @login_required
 def manage_videos():
     if request.method == 'POST':
@@ -275,25 +274,20 @@ def manage_videos():
             return redirect(url_for('manage_videos'))
 
         try:
-            # 1. Default Video Type
-            video_type = "mp4"
+            # 1. Default Video Type / Embed Logic
             embed_code = f'<video width="100%" controls><source src="{url}" type="video/mp4"></video>'
 
             # 2. Logic for YouTube/Facebook
             if "youtube.com" in url or "youtu.be" in url:
-                video_type = "youtube"
                 video_id = url.split('/')[-1].split('v=')[-1].split('?')[0]
                 embed_code = f'<iframe width="100%" height="315" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
 
             elif "facebook.com" in url or "fb.watch" in url:
-                video_type = "facebook"
                 embed_code = f'<iframe src="https://www.facebook.com/plugins/video.php?href={url}&show_text=0&width=560" width="100%" height="315" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true"></iframe>'
 
-            # 3. Save to Database
+            # 3. Save to Database: Sirf model mein मौजूद columns pass karein
             new_video = Video(
                 title=title,
-                video_url=url,
-                video_type=video_type,
                 embed_code=embed_code
             )
 

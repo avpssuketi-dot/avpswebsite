@@ -127,22 +127,22 @@ class User(db.Model):
     password = db.Column(db.String(300), nullable=False)
 
 # Yeh aapki models.py mein hona chahiye
+from datetime import datetime, timezone
+from app import db # ya jahan bhi aapka db define hai
+
 class Video(db.Model):
     __tablename__ = 'video'
     __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.Integer, primary_key=True)
-
     title = db.Column(db.String(200), nullable=False)
-
-    # Old: video_url
-    # New: embed_code
+    # URL ko convert karke yahan save karenge
     embed_code = db.Column(db.Text, nullable=True)
+    # Default time ke liye sahi format
+    date_added = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
-    date_added = db.Column(
-        db.DateTime,
-        default=lambda: datetime.now(timezone.utc)
-    )
+    def __repr__(self):
+        return f'<Video {self.title}>'    )
 
 
 class TCApplication(db.Model):
