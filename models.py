@@ -1,8 +1,29 @@
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timezone
+import os
 
-# Initialize db object
 db = SQLAlchemy()
+
+def create_app():
+    app = Flask(__name__)
+    
+    # Database URL setup
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+    
+    # Connection stability settings
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+        "pool_size": 10,
+        "max_overflow": 20
+    }
+
+    # db ko app ke saath initialize karein
+    db.init_app(app)
+    
+    return app
+
 
 class Result(db.Model):
     __tablename__ = 'results'
