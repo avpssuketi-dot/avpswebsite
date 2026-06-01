@@ -51,9 +51,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # --- CLOUDINARY CONFIGURATION ---
 cloudinary.config(
-    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME', 'djjvsvvy8'),
-    api_key = os.environ.get('CLOUDINARY_API_KEY', '465926195419728'),
-    api_secret = os.environ.get('CLOUDINARY_API_SECRET')
+    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.environ.get("CLOUDINARY_API_KEY"),
+    api_secret=os.environ.get("CLOUDINARY_API_SECRET")
 )
 
 # 2. DB aur Migrate ko App ke saath bind karein
@@ -226,40 +226,44 @@ def admin_gallery():
         file = request.files.get('file')
         caption = request.form.get('caption')
         category = request.form.get('category')
-        
+
         if file:
-            filename = secure_filename(file.filename)
-            save_path = os.path.join('static', 'images', 'gallery')
-            if not os.path.exists(save_path):
-                os.makedirs(save_path)
-            
-            file.save(os.path.join(save_path, filename))
-            
-            new_img = GalleryImage(filename=filename, caption=caption, category=category)
-            db.session.add(new_img)
-            db.session.commit()
-            
-            # Category set ki: gallery_success
-            flash("Image uploaded successfully!", "gallery_success")
+            try:
+                result = cloudinary.uploader.upload(
+                    file,
+                    folder="gallery"
+                )
+
+                new_img = GalleryImage(
+                    filename=result["secure_url"],
+                    caption=caption,
+                    category=category
+                )
+
+                db.session.add(new_img)
+                db.session.commit()
+
+                flash("Image uploaded successfully!", "gallery_success")
+
+            except Exception as e:
+                db.session.rollback()
+                flash(f"Upload Error: {str(e)}", "danger")
+
             return redirect(url_for('admin_gallery'))
-    
+
     images = GalleryImage.query.all()
     return render_template("admin/gallery.html", images=images)
+
 
 
 @app.route("/admin/gallery/delete/<int:id>")
 @login_required
 def delete_gallery_image(id):
     img = GalleryImage.query.get_or_404(id)
-    file_path = os.path.join('static', 'images', 'gallery', img.filename)
-    
-    if os.path.exists(file_path):
-        os.remove(file_path)
-    
+
     db.session.delete(img)
     db.session.commit()
-    
-    # Category set ki: gallery_success
+
     flash("Image deleted successfully!", "gallery_success")
     return redirect(url_for('admin_gallery'))
 

@@ -95,7 +95,7 @@ class GalleryImage(db.Model):
     __tablename__ = 'gallery_image'
     __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
-    filename = db.Column(db.String(100), nullable=False)
+    filename = db.Column(db.String(500), nullable=False)
     caption = db.Column(db.String(200))
     category = db.Column(db.String(50), default='campus')
     date_added = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
