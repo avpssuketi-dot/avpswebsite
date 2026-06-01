@@ -223,17 +223,25 @@ def gallery():
 @login_required
 def admin_gallery():
     if request.method == 'POST':
+        # Check karein ki kya file exist karti hai
+        if 'file' not in request.files:
+            flash("No file part in the request", "danger")
+            return redirect(request.url)
+            
         file = request.files.get('file')
         caption = request.form.get('caption')
         category = request.form.get('category')
 
-        if file:
+        # Filename check karein
+        if file and file.filename != '':
             try:
+                # Cloudinary Upload
                 result = cloudinary.uploader.upload(
-                    file,
+                    file.stream,
                     folder="gallery"
                 )
 
+                # Database mein save karein
                 new_img = GalleryImage(
                     filename=result["secure_url"],
                     caption=caption,
@@ -247,26 +255,27 @@ def admin_gallery():
 
             except Exception as e:
                 db.session.rollback()
+                # Error ko server console mein print karein taaki aap dekh sakein
+                print(f"DEBUG ERROR: {str(e)}") 
                 flash(f"Upload Error: {str(e)}", "danger")
+        else:
+            flash("No file selected for upload", "danger")
 
-            return redirect(url_for('admin_gallery'))
+        return redirect(url_for('admin_gallery'))
 
-    images = GalleryImage.query.all()
+    # GET request: images fetch karein
+    images = GalleryImage.query.order_by(GalleryImage.id.desc()).all()
     return render_template("admin/gallery.html", images=images)
 
 
-
-@app.route("/admin/gallery/delete/<int:id>")
+@app.route("/admin/gallery/delete/<int:id>", methods=['POST']) # Methods add karein
 @login_required
 def delete_gallery_image(id):
     img = GalleryImage.query.get_or_404(id)
-
     db.session.delete(img)
     db.session.commit()
-
-    flash("Image deleted successfully!", "gallery_success")
+    flash("Image deleted!", "success")
     return redirect(url_for('admin_gallery'))
-
 
 # ========================= VIDEO MANAGEMENT ROUTES =========================
 
@@ -593,14 +602,6 @@ def admin_logout():
     flash("You have logged out successfully.", "success")
     return redirect(url_for('home'))
 
-@app.route('/admin/delete_result/<int:id>', methods=['POST'])
-@login_required
-def delete_result(id):
-    res = Result.query.get_or_404(id)
-    db.session.delete(res)
-    db.session.commit()
-    flash("Result deleted successfully!", "success")
-    return redirect(url_for('admin_dashboard'))
 
 
 
@@ -620,34 +621,6 @@ def admin_dashboard():
                            total_notices=total_notices,
                            results=all_results)
 
-
-
-
-
-@app.route("/admin/upload_results", methods=['GET', 'POST'])
-@login_required
-def upload_results():
-    if request.method == 'POST':
-        file = request.files['file']
-        if file:
-            df = pd.read_excel(file)
-            for _, row in df.iterrows():
-                # Yahan aapki Excel mapping aayegi
-                new_res = Result(
-                    roll_no=str(row['Roll No']),
-                    student_name=row['Name'],
-                    class_name=row['Class'],
-                    # ... baki subjects map karein ...
-                )
-                db.session.add(new_res)
-            db.session.commit()
-            flash("Data uploaded successfully!", "success")
-    return render_template("admin/upload_results.html")
-
-
-with app.app_context():
-    db.create_all()
-    print("Database and tables created successfully!")
 
 ##--------------------- result route-----------------------------------------------------
 
@@ -714,13 +687,14 @@ def standardize_class_name(raw_name):
     }
     return mapping.get(name, name)
 
-# 2. Database Merge Helper
+# 2. Database Merge Helper (Optimized & Error-Free)
 def get_base_result(row, class_name, term, session):
-    # Excel se roll no uthayein (Assume kiya hai index 7 par roll no hai)
-    # .strip() aur string conversion se formatting errors hat jayenge
-    roll_no = str(row.iloc[7]).strip() 
+    # 1. Roll No ko clean karke string mein convert karein
+    val = row.iloc[7]
+    if pd.isna(val): return None
+    roll_no = str(int(float(val))).strip()
     
-    # Database mein search karein (Roll No + Class + Term + Session)
+    # 2. Database mein search karein (Roll No + Class + Term + Session)
     existing = Result.query.filter_by(
         class_name=class_name, 
         roll_no=roll_no, 
@@ -728,12 +702,15 @@ def get_base_result(row, class_name, term, session):
         session=session
     ).first()
     
-    # Agar record mile toh wahi return karo (Update ke liye), warna naya
+    # 3. Agar record mile toh wahi return karo (Update ke liye)
     if existing:
         return existing
         
-    # Naya record banane ke liye (Admission no optional hai toh handle karein)
-    adm_no = str(row.iloc[0]).strip()
+    # 4. Admission no ko clean handle karein (Fixes the 'nan' error)
+    adm_val = row.iloc[0]
+    adm_no = None if pd.isna(adm_val) or str(adm_val).strip().lower() in ['nan', ''] else str(adm_val).strip()
+    
+    # 5. Naya record banayein
     return Result(
         admission_no=adm_no, 
         roll_no=roll_no, 
@@ -741,6 +718,8 @@ def get_base_result(row, class_name, term, session):
         exam_term=term, 
         session=session
     )
+
+
 # Nayi Utility Functions jo 'AA' aur Numbers dono handle karengi
 def get_val_for_calc(row, sub, mapping, term):
     start, cols = mapping[sub]
@@ -832,7 +811,7 @@ def save_high(df, class_name, term, session):
 
 
 def save_pre_primary(df, class_name, term, session):
-    mapping = {"hindi": [8, 2], "english": [14, 2], "maths": [20, 2], "gk": [17, 1], "drawing": [20, 1], "comm": [23, 1], "pt": [26, 1], "activity": [30, 1]}
+    mapping = {"hindi": [8, 2], "english": [14, 2], "maths": [20, 2], "gk": [26, 1], "drawing": [29, 1], "comm": [32, 1], "pt": [35, 1], "activity": [38, 1]}
     for _, row in df.iterrows():
         if pd.isna(row.iloc[7]) or str(row.iloc[7]).lower() in ['roll no', 'nan', '']: continue
         res = get_base_result(row, class_name, term, session)
@@ -850,7 +829,7 @@ def save_pre_primary(df, class_name, term, session):
     db.session.commit()
 
 def save_primary(df, class_name, term, session):
-    mapping = {"hindi": [8, 2], "english": [14, 2], "maths": [20, 2], "evs": [26, 2], "sanskrit": [32, 2], "drawing": [38, 1], "moral": [41, 1], "comm": [44, 1], "pt": [47, 1], "activity": [50, 1]}
+    mapping = {"hindi": [8, 2], "english": [14, 2], "maths": [20, 2], "evs": [26, 2], "sanskrit": [32, 2], "drawing": [44, 2], "moral": [63, 1], "comm": [50, 1], "pt": [56, 1], "activity": [59, 1]}
     for _, row in df.iterrows():
         if pd.isna(row.iloc[7]) or str(row.iloc[7]).lower() in ['roll no', 'nan', '']: continue
         res = get_base_result(row, class_name, term, session)
@@ -870,7 +849,7 @@ def save_primary(df, class_name, term, session):
     db.session.commit()
 
 def save_middle(df, class_name, term, session):
-    mapping = {"hindi": [8, 2], "english": [14, 2], "maths": [20, 2], "evs": [26, 2], "computer": [32, 2], "sanskrit": [38, 2], "gk": [44, 2], "drawing": [50, 2], "comm": [56, 1], "pt": [59, 1], "eng_gram": [62, 1], "activity": [65, 1]}
+    mapping = {"hindi": [8, 2], "english": [14, 2], "maths": [20, 2], "evs": [26, 2], "computer": [32, 2], "sanskrit": [38, 2], "gk": [44, 2], "drawing": [50, 2], "comm": [59, 1], "pt": [62, 1], "english_grammar": [56, 1], "activity": [65, 1]}
     for _, row in df.iterrows():
         if pd.isna(row.iloc[7]) or str(row.iloc[7]).lower() in ['roll no', 'nan', '']: continue
         res = get_base_result(row, class_name, term, session)
@@ -891,6 +870,105 @@ def save_middle(df, class_name, term, session):
         db.session.merge(res)
     db.session.commit()
 
+
+###---------------------------------------------  upload results--------------------------------------------------------------------
+
+@app.route("/admin/upload_results", methods=['GET', 'POST'])
+@login_required
+def upload_results():
+    if request.method == 'POST':
+        file = request.files.get('file')
+        raw_class = request.form.get('class_name')
+        term = request.form.get('term')
+        session = request.form.get('session')
+        
+        def normalize(val):
+            val = str(val).lower().replace('th', '').replace('st', '').replace('nd', '').replace('rd', '').replace('class', '').strip()
+            roman = {'i': '1', 'ii': '2', 'iii': '3', 'iv': '4', 'v': '5', 'vi': '6', 'vii': '7', 'viii': '8', 'ix': '9', 'x': '10'}
+            return roman.get(val, val)
+
+        norm_class = normalize(raw_class)
+        
+        if not file or not raw_class or not term or not session:
+            flash("Sabhi fields bharein!", "danger")
+            return redirect(request.url)
+        
+        try:
+            df = pd.read_excel(file, header=None, skiprows=5)
+            df['norm_col'] = df.iloc[:, 5].apply(normalize)
+            df_filtered = df[df['norm_col'] == norm_class].copy()
+            
+            if df_filtered.empty:
+                flash(f"Error: Is class ({norm_class}) ka koi data nahi mila!", "danger")
+                return redirect(request.url)
+            
+            # DELETE: Purana data saaf karein
+            db.session.execute(
+                db.text("DELETE FROM results WHERE class_name = :cls AND exam_term = :term AND session = :sess"),
+                {"cls": str(norm_class), "term": str(term), "sess": str(session)}
+            )
+            
+            # SAVE: Class ke hisaab se
+            if norm_class in ['6', '7', '8']:
+                save_high(df_filtered, norm_class, term, session)
+            else:
+                save_results_to_db(df_filtered, norm_class, term, session)
+            
+            db.session.commit()
+            flash(f"Success! Class {norm_class} ka data update ho gaya.", "success")
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"CRITICAL ERROR: {str(e)}") 
+            flash(f"Error: {str(e)}", "danger")
+            
+        return redirect(url_for('upload_results')) 
+        
+    # GET request: Saara data fetch karke template ko bhejein
+    all_results = Result.query.order_by(Result.id.desc()).all()
+    return render_template('admin/upload_results.html', results=all_results)
+
+# --------------------------- ADMIN DELETE RESULTS ROUTES ---------------------------
+
+@app.route('/admin/delete_result/<int:id>', methods=['POST'])
+@login_required
+def delete_result(id):
+    """Single record delete karne ke liye"""
+    res = Result.query.get_or_404(id)
+    db.session.delete(res)
+    db.session.commit()
+    flash("Result deleted successfully!", "success")
+    return redirect(url_for('upload_results'))
+
+@app.route("/admin/delete_all_results", methods=['POST'])
+@login_required
+def delete_all_results():
+    """Sare records (table clean) karne ke liye"""
+    try:
+        # Result model ka use karke table clear karna safe hai
+        num_deleted = Result.query.delete() 
+        db.session.commit()
+        flash(f"All {num_deleted} results deleted successfully!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash("Error deleting results.", "danger")
+    return redirect(url_for('upload_results'))
+
+@app.route('/admin/delete_selected', methods=['POST'])
+@login_required
+def delete_selected():
+    # Checkboxes se selected IDs ki list lein
+    ids = request.form.getlist('selected_ids')
+    if ids:
+        # Filter karke delete karein
+        Result.query.filter(Result.id.in_(ids)).delete(synchronize_session=False)
+        db.session.commit()
+        flash(f"{len(ids)} records deleted successfully!", "success")
+    else:
+        flash("Koi record select nahi kiya!", "danger")
+    return redirect(url_for('upload_results'))
+
+
 ######## -----------show result----------------------------------------------------------
 
 
@@ -906,75 +984,6 @@ def show_result(roll_no):
 
 
 
-@app.route('/admin/upload', methods=['GET', 'POST'])
-@login_required
-def upload_result():
-    if request.method == 'POST':
-        file = request.files.get('file')
-        raw_class = request.form.get('class_name')
-        term = request.form.get('term')
-        session = request.form.get('session')
-        
-        def normalize(val):
-            # Sabse pehle input ko string mein badlein aur saaf karein
-            val = str(val).lower().replace('th', '').replace('st', '').replace('nd', '').replace('rd', '').replace('class', '').strip()
-            # Roman numerals handle karein
-            roman = {'i': '1', 'ii': '2', 'iii': '3', 'iv': '4', 'v': '5', 'vi': '6', 'vii': '7', 'viii': '8', 'ix': '9', 'x': '10'}
-            return roman.get(val, val)
-
-        norm_class = normalize(raw_class)
-        
-        if not file or not raw_class or not term or not session:
-            flash("Sabhi fields bharein!", "danger")
-            return redirect(request.url)
-        
-        try:
-            df = pd.read_excel(file, header=None, skiprows=5)
-            # DataFrame mein class column ko normalize karein (Index 5 assume kiya hai)
-            df['norm_col'] = df.iloc[:, 5].apply(normalize)
-            df_filtered = df[df['norm_col'] == norm_class].copy()
-            
-            if df_filtered.empty:
-                flash(f"Error: Is class ({norm_class}) ka koi data nahi mila!", "danger")
-                return redirect(request.url)
-            
-            # 1. DELETE: Purana data saaf karein (Database error rokne ke liye)
-            db.session.execute(
-                db.text("DELETE FROM results WHERE class_name = :cls AND exam_term = :term AND session = :sess"),
-                {"cls": str(norm_class), "term": str(term), "sess": str(session)}
-            )
-            
-            # 2. SAVE: Class ke hisaab se sahi function call karein
-            if norm_class in ['6', '7', '8']:
-                save_high(df_filtered, norm_class, term, session)
-            else:
-                save_results_to_db(df_filtered, norm_class, term, session)
-            
-            db.session.commit()
-            flash(f"Success! Class {norm_class} ka data update ho gaya.", "success")
-            
-        except Exception as e:
-            db.session.rollback()
-            # Error ko terminal mein saaf dikhayein
-            print(f"CRITICAL ERROR: {str(e)}") 
-            flash(f"Error: {str(e)}", "danger")
-            
-        return redirect(url_for('admin_dashboard'))
-        
-    return render_template('admin_upload.html')
-
-
-@app.route("/admin/delete_all_results", methods=['POST'])
-@login_required
-def delete_all_results():
-    try:
-        Result.query.delete() 
-        db.session.commit()
-        flash("All results deleted successfully!", "success")
-    except Exception as e:
-        db.session.rollback()
-        flash("Error deleting results.", "danger")
-    return redirect(url_for('admin_dashboard'))
 
 
 @app.route('/check_db')
