@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Results - Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { display: flex; min-height: 100vh; background: #f4f6f9; }
+        .sidebar { width: 260px; background: #1e3a5a; color: white; height: 100vh; position: fixed; left: 0; top: 0; overflow-y: auto; }
+        .sidebar h2 { padding: 20px; font-size: 18px; color: #ffcc00; text-align: center; }
+        .sidebar a { display: block; color: #cbd5e1; padding: 15px 20px; text-decoration: none; border-bottom: 1px solid #163b5d; }
+        .sidebar a:hover { background: #163b5d; color: white; }
+        .logout-btn { background: #163b5d; color: #fca5a5 !important; }
+        .main-content { margin-left: 260px; width: calc(100% - 260px); padding: 30px; }
+        .modern-card { max-width: 800px; margin: 0 auto; padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>Angels Valley Admin</h2>
+        <a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('admin_logout') }}" class="logout-btn">🚪 Logout</a>
+    </div>
+
+    <div class="main-content">
+        <div class="modern-card">
+            <h3 style="color:#1f4e79; text-align: center;">Upload & Manage Student Results</h3>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}{% for category, message in messages %}
+                <div style="padding: 10px; margin: 10px 0; border-radius: 5px; text-align: center; font-weight: bold;
+                    {% if category == 'success' %} background: #d4edda; color: #155724; border: 1px solid #c3e6cb;
+                    {% else %} background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; {% endif %}">
+                  {{ message }}
+                </div>
+              {% endfor %}{% endif %}
+            {% endwith %}
+            
+            <hr style="margin: 15px 0;">
+            
+            <form method="POST" action="{{ url_for('upload_results') }}" enctype="multipart/form-data">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="font-weight: bold;">Select Class:</label>
+                        <select name="class_name" required style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+                            <option value="" disabled selected>-- Select Class --</option>
+                            <optgroup label="Primary"><option value="Nursery">Nursery</option><option value="LKG">LKG</option><option value="UKG">UKG</option></optgroup>
+                            <optgroup label="Classes 1-8">
+                                {% for i in range(1, 9) %}<option value="{{i}}">Class {{i}}</option>{% endfor %}
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="font-weight: bold;">Exam Term:</label>
+                        <select name="term" required style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+                            <option value="1st Term">1st Term</option><option value="Half Yearly">Half Yearly</option><option value="Annual">Annual</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-top: 15px;">
+                    <label style="font-weight: bold;">Academic Session:</label>
+                    <input type="text" name="session" placeholder="e.g. 2025-26" required style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+                </div>
+                <div style="margin-top: 15px;">
+                    <label style="font-weight: bold;">Excel File:</label>
+                    <input type="file" name="file" accept=".xlsx, .xls, .xlsm" required style="width: 100%; padding: 10px; border: 1px solid #ccc; background: white;">
+                </div>
+                <button type="submit" style="width: 100%; margin-top: 20px; padding: 12px; background: #1f4e79; color: white; border: none; border-radius: 5px; cursor: pointer;">Upload Results</button>
+            </form>
+
+            <hr style="margin: 30px 0;">
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color:#1f4e79; margin:0;">Existing Records</h3>
+                <div>
+                    <form id="bulkDeleteForm" action="{{ url_for('delete_selected') }}" method="POST" style="display:inline;">
+                        <button type="submit" style="background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer;">Delete Selected</button>
+                    </form>
+                    <form action="{{ url_for('delete_all_results') }}" method="POST" style="display:inline;" onsubmit="return confirm('SAARA data delete ho jayega. Pakka?');">
+                        <button type="submit" style="background: #6c757d; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer;">Delete All</button>
+                    </form>
+                </div>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; background: white;">
+                    <thead>
+                        <tr style="background: #1f4e79; color: white;">
+                            <th style="padding: 10px;"><input type="checkbox" id="selectAll" onclick="toggleAll(this)"></th>
+                            <th style="padding: 10px;">Class</th>
+                            <th style="padding: 10px;">Roll</th>
+                            <th style="padding: 10px;">Name</th>
+                            <th style="padding: 10px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for res in results %}
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;"><input type="checkbox" name="selected_ids" value="{{ res.id }}" form="bulkDeleteForm"></td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">{{ res.class_name }}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">{{ res.roll_no }}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ res.student_name }}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">
+                                <form action="{{ url_for('delete_result', id=res.id) }}" method="POST" onsubmit="return confirm('Delete this record?');">
+                                    <button type="submit" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" style="padding: 20px; text-align: center;">No results found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleAll(source) {
+            checkboxes = document.getElementsByName('selected_ids');
+            for(var i=0; i<checkboxes.length; i++) checkboxes[i].checked = source.checked;
+        }
+    </script>
+</body>
+</html>

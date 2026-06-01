@@ -3,9 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Angels Valley Public School{% endblock %}</title>
+
+    <!-- 🔥 Dynamic SEO Title (Flask block + optimized default) -->
+    <title>{% block title %}Best School in Fatehpur | Angels Valley Public School | Admissions Open 2026{% endblock %}</title>
+
+    <!-- 🔥 SEO Description -->
+    <meta name="description" content="{% block description %}Angels Valley Public School Fatehpur offers quality education from Nursery to Class 8. Admissions Open 2026-27 with experienced teachers, modern facilities and safe learning environment.{% endblock %}">
+
+    <!-- ⚠️ Keywords (optional, Google ignore karta hai but ok for safety) -->
+    <meta name="keywords" content="Best School in Fatehpur, CBSE School Fatehpur, Angels Valley Public School, AVPS Fatehpur Admission, Nursery Admission Fatehpur, Primary School Fatehpur">
+
+    <meta name="author" content="Angels Valley Public School">
+
+    <!-- 🔥 Open Graph (Social Sharing SEO) -->
+    <meta property="og:title" content="{% block og_title %}Best School in Fatehpur | Angels Valley Public School{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Admissions Open 2026-27. Quality education from Nursery to Class 8 in Fatehpur.{% endblock %}">
+    <meta property="og:image" content="https://avps.co.in/static/images/logo.png">
+    <meta property="og:url" content="https://avps.co.in">
+    <meta property="og:type" content="website">
+
+    <!-- 🔥 Twitter SEO (extra boost) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Best School in Fatehpur | AVPS">
+    <meta name="twitter:description" content="Admissions Open 2026-27. Nursery to Class 8 education in Fatehpur.">
+    <meta name="twitter:image" content="https://avps.co.in/static/images/logo.png">
+
+    <!-- Favicon -->
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>

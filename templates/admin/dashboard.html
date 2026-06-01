@@ -48,31 +48,83 @@
     <a href="{{ url_for('manage_videos') }}" class="media-menu">🎥 Manage Videos</a>
 
     <a href="{{ url_for('admin_fees') }}">💰 Fees & Deposits</a>
-    <a href="{{ url_for('admin_dashboard') }}#results-section">📝 Results</a>
+    <a href="{{ url_for('upload_results') }}">📝 Results Upload</a>
     <a href="{{ url_for('change_password') }}">🔑 Change Password</a>
     <a href="{{ url_for('admin_logout') }}" class="logout-btn">🚪 Logout</a>
 </div>
 
 <div class="main-content">
+
+    <!-- HEADER CARD -->
     <div class="card">
-        <h2>Admin Dashboard Overview</h2>
+        <h2>📊 Admin Dashboard Overview</h2>
+        <p style="color:#64748b; margin-top:5px;">
+            Welcome to Angels Valley School Admin Panel
+        </p>
     </div>
 
+    <!-- STATS -->
     <div class="summary-container">
+
         <div class="stat-card">
             <h3>Total Admissions</h3>
-            <p>{{ admissions|length }}</p>
+            <p>{{ admissions|length if admissions is defined and admissions else 0 }}</p>
         </div>
+
         <div class="stat-card">
             <h3>Total Inquiries</h3>
-            <p>{{ inquiries|length }}</p>
+            <p>{{ inquiries|length if inquiries is defined and inquiries else 0 }}</p>
         </div>
+
         <div class="stat-card">
             <h3>Total Notices</h3>
-            <p>{{ total_notices }}</p>
+            <p>{{ total_notices if total_notices is defined else 0 }}</p>
+
+        </div>
+
+        <div class="stat-card">
+            <h3>Videos</h3>
+            <p>{{ videos|length if videos is defined and videos else 0 }}</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>Gallery</h3>
+            <p>{{ images|length if images is defined and images else 0 }}</p>
+        </div>
+
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="card">
+        <h3>⚡ Quick Actions</h3>
+
+        <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:15px;">
+
+            <a href="{{ url_for('admin_notices') }}"
+               style="padding:10px 15px; background:#1f4e79; color:white; border-radius:6px; text-decoration:none;">
+               📢 Add Notice
+            </a>
+
+            <a href="{{ url_for('manage_videos') }}"
+               style="padding:10px 15px; background:#10b981; color:white; border-radius:6px; text-decoration:none;">
+               🎥 Add Video
+            </a>
+
+            <a href="{{ url_for('admin_gallery') }}"
+               style="padding:10px 15px; background:#f59e0b; color:white; border-radius:6px; text-decoration:none;">
+               🖼️ Upload Image
+            </a>
+
+            <a href="{{ url_for('view_inquiries') }}"
+               style="padding:10px 15px; background:#ef4444; color:white; border-radius:6px; text-decoration:none;">
+               📞 View Leads
+            </a>
+
         </div>
     </div>
+
 </div>
+
 
 </body>
 </html>
