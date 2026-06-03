@@ -268,7 +268,7 @@ def admin_gallery():
     return render_template("admin/gallery.html", images=images)
 
 
-@app.route("/admin/gallery/delete/<int:id>", methods=['POST']) # Methods add karein
+@app.route("/admin/gallery/delete/<int:id>")
 @login_required
 def delete_gallery_image(id):
     img = GalleryImage.query.get_or_404(id)
