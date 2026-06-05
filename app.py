@@ -723,19 +723,37 @@ def get_base_result(row, class_name, term, session):
 # Nayi Utility Functions jo 'AA' aur Numbers dono handle karengi
 def get_val_for_calc(row, sub, mapping, term):
     start, cols = mapping[sub]
-    offset = (0 if term=="1st Term" else (cols if term=="Half Yearly" else cols*2))
+    # Agar term "Annual" hai toh offset cols*2 hoga
+    offset = (0 if term == "1st Term" else (cols if term == "Half Yearly" else cols * 2))
     total = 0
     for i in range(cols):
-        val = row.iloc[start+offset+i]
+        val = row.iloc[start + offset + i]
+        # Yahan 'AA' ko 0 maanenge aur baaki numbers ko add karenge
+        if str(val).strip().upper() == 'AA':
+            continue
         try:
-            total += float(val) # Agar 'AA' hai toh ye except mein jayega
-        except: continue 
+            total += float(val)
+        except:
+            continue
     return total
 
 def get_val_for_db(row, sub, mapping, term):
     start, cols = mapping[sub]
-    offset = (0 if term=="1st Term" else (cols if term=="Half Yearly" else cols*2))
-    vals = [str(row.iloc[start+offset+i]) for i in range(cols)]
+    offset = (0 if term == "1st Term" else (cols if term == "Half Yearly" else cols * 2))
+    
+    vals = []
+    for i in range(cols):
+        val = row.iloc[start + offset + i]
+        # Agar cell empty hai toh 0 ya 'AA' handle karein
+        if pd.isna(val) or str(val).strip() == '':
+            vals.append("0")
+        else:
+            vals.append(str(val).strip())
+            
+    # Agar saare values 'AA' hain toh 'AA' return karein, warna string
+    if all(v.upper() == 'AA' for v in vals):
+        return 'AA'
+        
     return " ".join(vals)
 
 # 3. Main Routing
@@ -754,122 +772,325 @@ def save_high(df, class_name, term, session):
         "sanskrit": [44, 2], "gk": [50, 2], "drawing": [56, 2], 
         "eng_gram": [62, 1], "comm": [65, 1], "pt": [68, 1], "activity": [71, 1]
     }
-    
+
+    # Helper function: NaN/Empty aur 'AA' ko safely handle karne ke liye
+    def to_num(val):
+        if pd.isna(val) or str(val).strip() == '':
+            return 0
+        if str(val).strip().upper() == 'AA':
+            return 0
+        try:
+            return int(float(val))
+        except:
+            return 0
+
+    # Helper function: Subject totals ke liye (AA support ke saath)
+    def get_subject_total(row, sub, mapping, term):
+        start, cols = mapping[sub]
+        offset = (0 if term == "1st Term" else (cols if term == "Half Yearly" else cols * 2))
+        sub_total = 0
+        has_aa = False
+        
+        for i in range(cols):
+            val = row.iloc[start + offset + i]
+            if pd.isna(val) or str(val).strip() == '':
+                continue
+            
+            val_str = str(val).strip().upper()
+            if val_str == 'AA':
+                has_aa = True
+                continue
+            try:
+                sub_total += float(val)
+            except:
+                continue
+        
+        # Agar 'AA' mark kiya hai aur total 0 hai, toh 'AA' return karo
+        return 'AA' if has_aa and sub_total == 0 else int(sub_total)
+
     for _, row in df.iterrows():
-        # 1. Roll No ko safe tareeke se handle karein (NaN error fix)
         val = row.iloc[7]
         if pd.isna(val): continue
-        try:
-            raw_roll = str(int(float(val)))
-        except (ValueError, TypeError):
-            continue # Agar roll no valid nahi hai toh skip karein
+        try: raw_roll = str(int(float(val)))
+        except: continue
             
-        # 2. Database mein record check karein
-        res = Result.query.filter_by(
-            class_name=class_name, 
-            roll_no=raw_roll, 
-            exam_term=term, 
-            session=session
-        ).first()
-        
-        # 3. Agar naya hai toh object banayein
+        res = Result.query.filter_by(class_name=class_name, roll_no=raw_roll, exam_term=term, session=session).first()
         if not res:
-            res = Result(
-                class_name=class_name,
-                roll_no=raw_roll,
-                exam_term=term,
-                session=session
-            )
+            res = Result(class_name=class_name, roll_no=raw_roll, exam_term=term, session=session)
         
-        # 4. Fields Update
+        # 3. Fields Update
         res.admission_no = str(row.iloc[0]).strip() if pd.notna(row.iloc[0]) else ""
         res.student_name = str(row.iloc[1]).strip() if pd.notna(row.iloc[1]) else ""
         res.father_name = str(row.iloc[2]).strip() if pd.notna(row.iloc[2]) else ""
         
-        # 5. Marks Update (Saare 13 subjects)
-        res.hindi = get_val_for_db(row, "hindi", mapping, term)
-        res.english = get_val_for_db(row, "english", mapping, term)
-        res.maths = get_val_for_db(row, "maths", mapping, term)
-        res.science = get_val_for_db(row, "science", mapping, term)
-        res.sst = get_val_for_db(row, "sst", mapping, term)
-        res.computer = get_val_for_db(row, "computer", mapping, term)
-        res.sanskrit = get_val_for_db(row, "sanskrit", mapping, term)
-        res.gk = get_val_for_db(row, "gk", mapping, term)
-        res.drawing = get_val_for_db(row, "drawing", mapping, term)
-        res.english_grammar = get_val_for_db(row, "eng_gram", mapping, term)
-        res.conversation = get_val_for_db(row, "comm", mapping, term)
-        res.pt_marks = get_val_for_db(row, "pt", mapping, term)
-        res.activity = get_val_for_db(row, "activity", mapping, term)
+        # 4. Marks Update
+        res.hindi = get_subject_total(row, "hindi", mapping, term)
+        res.english = get_subject_total(row, "english", mapping, term)
+        res.maths = get_subject_total(row, "maths", mapping, term)
+        res.science = get_subject_total(row, "science", mapping, term)
+        res.sst = get_subject_total(row, "sst", mapping, term)
+        res.computer = get_subject_total(row, "computer", mapping, term)
+        res.sanskrit = get_subject_total(row, "sanskrit", mapping, term)
+        res.gk = get_subject_total(row, "gk", mapping, term)
+        res.drawing = get_subject_total(row, "drawing", mapping, term)
+        res.english_grammar = get_subject_total(row, "eng_gram", mapping, term)
+        res.conversation = get_subject_total(row, "comm", mapping, term)
+        res.pt_marks = get_subject_total(row, "pt", mapping, term)
+        res.activity = get_subject_total(row, "activity", mapping, term)
         
-        # 6. Total Calculation
-        res.total_marks = sum([get_val_for_calc(row, sub, mapping, term) for sub in mapping])
+        # 5. Totals Calculation (Current term ke marks)
+        marks_list = [res.hindi, res.english, res.maths, res.science, res.sst, 
+                      res.computer, res.sanskrit, res.gk, res.drawing, 
+                      res.english_grammar, res.conversation, res.pt_marks, res.activity]
         
-        # 7. Merge (Ye Insert/Update dono handle karega)
+        res.total_marks = sum(to_num(m) for m in marks_list)
+        
+        # 6. Previous Terms Data (Database ya Excel file se fetch kiya gaya data)
+        ft = to_num(row.iloc[88])
+        hy = to_num(row.iloc[89])
+        
+        # Store these in result object if needed for the database
+        res.first_term_total = ft
+        res.half_yearly_total = hy
+        
+        # 7. Grand Total Logic: 
+        # Sirf wahi terms add honge jo CURRENT term se pehle hain.
+        if term == "1st Term":
+            res.grand_total = res.total_marks
+        elif term == "Half Yearly":
+            # Current marks (HY) + Previous term (FT)
+            res.grand_total = res.total_marks + ft
+        else: # Annual
+            # Current marks (Annual) + Previous terms (FT + HY)
+            res.grand_total = res.total_marks + ft + hy
+
         db.session.merge(res)
     
     db.session.commit()
 
-
 def save_pre_primary(df, class_name, term, session):
-    mapping = {"hindi": [8, 2], "english": [14, 2], "maths": [20, 2], "gk": [26, 1], "drawing": [29, 1], "comm": [32, 1], "pt": [35, 1], "activity": [38, 1]}
+    mapping = {
+        "hindi": [8, 2], "english": [14, 2], "maths": [20, 2], 
+        "gk": [26, 1], "drawing": [29, 1], "comm": [32, 1], 
+        "pt": [35, 1], "activity": [38, 1]
+    }
+
+    # Helper: Subject total calculate karne ke liye
+    def get_subject_total(row, sub, mapping, term):
+        start, cols = mapping[sub]
+        offset = (0 if term == "1st Term" else (cols if term == "Half Yearly" else cols * 2))
+        sub_total = 0
+        has_aa = False
+        for i in range(cols):
+            val = row.iloc[start + offset + i]
+            if pd.isna(val) or str(val).strip() == '': continue
+            val_str = str(val).strip().upper()
+            if val_str == 'AA':
+                has_aa = True
+                continue
+            try: sub_total += float(val)
+            except: continue
+        return 'AA' if has_aa and sub_total == 0 else int(sub_total)
+
+    # Helper: Numeric conversion (Float to Int safely to avoid 12.0)
+    def to_num(val):
+        if pd.isna(val) or str(val).strip().upper() == 'AA': return 0
+        try: 
+            return int(float(val)) # Yeh 12.0 ko 12 bana dega
+        except: return 0
+
     for _, row in df.iterrows():
-        if pd.isna(row.iloc[7]) or str(row.iloc[7]).lower() in ['roll no', 'nan', '']: continue
+        val = row.iloc[7]
+        if pd.isna(val) or str(val).lower() in ['roll no', 'nan', '']: continue
+        
         res = get_base_result(row, class_name, term, session)
-        res.roll_no, res.student_name, res.father_name = str(int(float(row.iloc[7]))), str(row.iloc[1]), str(row.iloc[2])
-        res.hindi = get_val_for_db(row, "hindi", mapping, term)
-        res.english = get_val_for_db(row, "english", mapping, term)
-        res.maths = get_val_for_db(row, "maths", mapping, term)
-        res.gk = get_val_for_db(row, "gk", mapping, term)
-        res.drawing = get_val_for_db(row, "drawing", mapping, term)
-        res.conversation = get_val_for_db(row, "comm", mapping, term)
-        res.pt_marks = get_val_for_db(row, "pt", mapping, term)
-        res.activity = get_val_for_db(row, "activity", mapping, term)
-        res.total_marks = sum([get_val_for_calc(row, sub, mapping, term) for sub in mapping])
+        res.roll_no = str(int(float(val)))
+        res.student_name = str(row.iloc[1]) if pd.notna(row.iloc[1]) else ""
+        res.father_name = str(row.iloc[2]) if pd.notna(row.iloc[2]) else ""
+        
+        # Marks Update
+        res.hindi = get_subject_total(row, "hindi", mapping, term)
+        res.english = get_subject_total(row, "english", mapping, term)
+        res.maths = get_subject_total(row, "maths", mapping, term)
+        res.gk = get_subject_total(row, "gk", mapping, term)
+        res.drawing = get_subject_total(row, "drawing", mapping, term)
+        res.conversation = get_subject_total(row, "comm", mapping, term)
+        res.pt_marks = get_subject_total(row, "pt", mapping, term)
+        res.activity = get_subject_total(row, "activity", mapping, term)
+        
+        # 1. Current Term Total (Integer mein)
+        marks_list = [res.hindi, res.english, res.maths, res.gk, 
+                      res.drawing, res.conversation, res.pt_marks, res.activity]
+        
+        # Helper ke zariye list ke har element ko int mein convert karke sum karein
+        res.total_marks = sum(to_num(m) for m in marks_list)
+        
+        # 2. Previous Term Data
+        res.first_term_total = to_num(row.iloc[51])
+        res.half_yearly_total = to_num(row.iloc[52])
+        
+        # 3. Grand Total Logic
+        if term == "1st Term":
+            res.grand_total = res.total_marks
+        elif term == "Half Yearly":
+            res.grand_total = res.total_marks + res.first_term_total
+        else: # Annual
+            res.grand_total = res.total_marks + res.first_term_total + res.half_yearly_total
+
         db.session.merge(res)
     db.session.commit()
+
 
 def save_primary(df, class_name, term, session):
-    mapping = {"hindi": [8, 2], "english": [14, 2], "maths": [20, 2], "evs": [26, 2], "sanskrit": [32, 2], "drawing": [44, 2], "moral": [63, 1], "comm": [50, 1], "pt": [56, 1], "activity": [59, 1]}
+    mapping = {
+        "hindi": [8, 2], "english": [14, 2], "maths": [20, 2], 
+        "evs": [26, 2], "sanskrit": [32, 2], "drawing": [44, 2], 
+        "moral": [63, 1], "comm": [50, 1], "pt": [56, 1], "activity": [59, 1]
+    }
+
+    # Helper: Subject total calculate karne ke liye
+    def get_subject_total(row, sub, mapping, term):
+        start, cols = mapping[sub]
+        offset = (0 if term == "1st Term" else (cols if term == "Half Yearly" else cols * 2))
+        sub_total = 0
+        has_aa = False
+        for i in range(cols):
+            val = row.iloc[start + offset + i]
+            if pd.isna(val) or str(val).strip() == '': continue
+            val_str = str(val).strip().upper()
+            if val_str == 'AA':
+                has_aa = True
+                continue
+            try: sub_total += float(val)
+            except: continue
+        return 'AA' if has_aa and sub_total == 0 else int(sub_total)
+
+    # Helper: Numeric conversion (Float to Int safely)
+    def to_num(val):
+        if pd.isna(val) or str(val).strip().upper() == 'AA': return 0
+        try: return int(float(val))
+        except: return 0
+
     for _, row in df.iterrows():
-        if pd.isna(row.iloc[7]) or str(row.iloc[7]).lower() in ['roll no', 'nan', '']: continue
+        val = row.iloc[7]
+        if pd.isna(val) or str(val).lower() in ['roll no', 'nan', '']: continue
+        
         res = get_base_result(row, class_name, term, session)
-        res.roll_no, res.student_name, res.father_name = str(int(float(row.iloc[7]))), str(row.iloc[1]), str(row.iloc[2])
-        res.hindi = get_val_for_db(row, "hindi", mapping, term)
-        res.english = get_val_for_db(row, "english", mapping, term)
-        res.maths = get_val_for_db(row, "maths", mapping, term)
-        res.evs = get_val_for_db(row, "evs", mapping, term)
-        res.sanskrit = get_val_for_db(row, "sanskrit", mapping, term)
-        res.drawing = get_val_for_db(row, "drawing", mapping, term)
-        res.moral = get_val_for_db(row, "moral", mapping, term)
-        res.conversation = get_val_for_db(row, "comm", mapping, term)
-        res.pt_marks = get_val_for_db(row, "pt", mapping, term)
-        res.activity = get_val_for_db(row, "activity", mapping, term)
-        res.total_marks = sum([get_val_for_calc(row, sub, mapping, term) for sub in mapping])
+        res.roll_no = str(int(float(val)))
+        res.student_name = str(row.iloc[1]) if pd.notna(row.iloc[1]) else ""
+        res.father_name = str(row.iloc[2]) if pd.notna(row.iloc[2]) else ""
+        
+        # Marks Update
+        res.hindi = get_subject_total(row, "hindi", mapping, term)
+        res.english = get_subject_total(row, "english", mapping, term)
+        res.maths = get_subject_total(row, "maths", mapping, term)
+        res.evs = get_subject_total(row, "evs", mapping, term)
+        res.sanskrit = get_subject_total(row, "sanskrit", mapping, term)
+        res.drawing = get_subject_total(row, "drawing", mapping, term)
+        res.moral = get_subject_total(row, "moral", mapping, term)
+        res.conversation = get_subject_total(row, "comm", mapping, term)
+        res.pt_marks = get_subject_total(row, "pt", mapping, term)
+        res.activity = get_subject_total(row, "activity", mapping, term)
+        
+        # 1. Current Term Total
+        marks_list = [res.hindi, res.english, res.maths, res.evs, res.sanskrit, 
+                      res.drawing, res.moral, res.conversation, res.pt_marks, res.activity]
+        res.total_marks = sum(to_num(m) for m in marks_list)
+        
+        # 2. Previous Term Data (Excel indices 73 and 74)
+        ft = to_num(row.iloc[73])
+        hy = to_num(row.iloc[74])
+        res.first_term_total = ft
+        res.half_yearly_total = hy
+        
+        # 3. Corrected Grand Total Logic (No duplication)
+        if term == "1st Term":
+            res.grand_total = res.total_marks
+        elif term == "Half Yearly":
+            res.grand_total = res.total_marks + ft
+        else: # Annual
+            res.grand_total = res.total_marks + ft + hy
+
         db.session.merge(res)
     db.session.commit()
+
 
 def save_middle(df, class_name, term, session):
-    mapping = {"hindi": [8, 2], "english": [14, 2], "maths": [20, 2], "evs": [26, 2], "computer": [32, 2], "sanskrit": [38, 2], "gk": [44, 2], "drawing": [50, 2], "comm": [59, 1], "pt": [62, 1], "english_grammar": [56, 1], "activity": [65, 1]}
+    mapping = {
+        "hindi": [8, 2], "english": [14, 2], "maths": [20, 2], 
+        "evs": [26, 2], "computer": [32, 2], "sanskrit": [38, 2], 
+        "gk": [44, 2], "drawing": [50, 2], "comm": [59, 1], 
+        "pt": [62, 1], "eng_gram": [56, 1], "activity": [65, 1]
+    }
+
+    # Helper: Subject total calculate karne ke liye
+    def get_subject_total(row, sub, mapping, term):
+        start, cols = mapping[sub]
+        offset = (0 if term == "1st Term" else (cols if term == "Half Yearly" else cols * 2))
+        sub_total = 0
+        has_aa = False
+        for i in range(cols):
+            val = row.iloc[start + offset + i]
+            if pd.isna(val) or str(val).strip() == '': continue
+            val_str = str(val).strip().upper()
+            if val_str == 'AA':
+                has_aa = True
+                continue
+            try: sub_total += float(val)
+            except: continue
+        return 'AA' if has_aa and sub_total == 0 else int(sub_total)
+
+    # Helper: Numeric conversion
+    def to_num(val):
+        if pd.isna(val) or str(val).strip().upper() == 'AA': return 0
+        try: return int(float(val))
+        except: return 0
+
     for _, row in df.iterrows():
-        if pd.isna(row.iloc[7]) or str(row.iloc[7]).lower() in ['roll no', 'nan', '']: continue
+        val = row.iloc[7]
+        if pd.isna(val) or str(val).lower() in ['roll no', 'nan', '']: continue
+        
         res = get_base_result(row, class_name, term, session)
-        res.roll_no, res.student_name, res.father_name = str(int(float(row.iloc[7]))), str(row.iloc[1]), str(row.iloc[2])
-        res.hindi = get_val_for_db(row, "hindi", mapping, term)
-        res.english = get_val_for_db(row, "english", mapping, term)
-        res.maths = get_val_for_db(row, "maths", mapping, term)
-        res.evs = get_val_for_db(row, "evs", mapping, term)
-        res.computer = get_val_for_db(row, "computer", mapping, term)
-        res.sanskrit = get_val_for_db(row, "sanskrit", mapping, term)
-        res.gk = get_val_for_db(row, "gk", mapping, term)
-        res.drawing = get_val_for_db(row, "drawing", mapping, term)
-        res.conversation = get_val_for_db(row, "comm", mapping, term)
-        res.pt_marks = get_val_for_db(row, "pt", mapping, term)
-        res.english_grammar = get_val_for_db(row, "eng_gram", mapping, term)
-        res.activity = get_val_for_db(row, "activity", mapping, term)
-        res.total_marks = sum([get_val_for_calc(row, sub, mapping, term) for sub in mapping])
+        res.roll_no = str(int(float(val)))
+        res.student_name = str(row.iloc[1]) if pd.notna(row.iloc[1]) else ""
+        res.father_name = str(row.iloc[2]) if pd.notna(row.iloc[2]) else ""
+        
+        # Marks Update
+        res.hindi = get_subject_total(row, "hindi", mapping, term)
+        res.english = get_subject_total(row, "english", mapping, term)
+        res.maths = get_subject_total(row, "maths", mapping, term)
+        res.evs = get_subject_total(row, "evs", mapping, term)
+        res.computer = get_subject_total(row, "computer", mapping, term)
+        res.sanskrit = get_subject_total(row, "sanskrit", mapping, term)
+        res.gk = get_subject_total(row, "gk", mapping, term)
+        res.drawing = get_subject_total(row, "drawing", mapping, term)
+        res.conversation = get_subject_total(row, "comm", mapping, term)
+        res.pt_marks = get_subject_total(row, "pt", mapping, term)
+        res.english_grammar = get_subject_total(row, "eng_gram", mapping, term)
+        res.activity = get_subject_total(row, "activity", mapping, term)
+        
+        # 1. Total Marks (Current Term)
+        marks_list = [res.hindi, res.english, res.maths, res.evs, res.computer, 
+                      res.sanskrit, res.gk, res.drawing, res.conversation, 
+                      res.pt_marks, res.english_grammar, res.activity]
+        res.total_marks = sum(to_num(m) for m in marks_list)
+        
+        # 2. Previous Term Data (Excel indices 79 and 80)
+        ft = to_num(row.iloc[79])
+        hy = to_num(row.iloc[80])
+        res.first_term_total = ft
+        res.half_yearly_total = hy
+        
+        # 3. Grand Total Logic (No duplication)
+        if term == "1st Term":
+            res.grand_total = res.total_marks
+        elif term == "Half Yearly":
+            res.grand_total = res.total_marks + ft
+        else: # Annual
+            res.grand_total = res.total_marks + ft + hy
+
         db.session.merge(res)
     db.session.commit()
-
 
 ###---------------------------------------------  upload results--------------------------------------------------------------------
 

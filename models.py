@@ -41,10 +41,15 @@ class Result(db.Model):
     activity = db.Column(db.String(10), default="0")
     
     total_marks = db.Column(db.Float, default=0.0)
+
+    first_term_total = db.Column(db.Float, default=0)
+    half_yearly_total = db.Column(db.Float, default=0)
+    grand_total = db.Column(db.Float, default=0)
     percentage = db.Column(db.Float, default=0.0)
     grade = db.Column(db.String(5), nullable=True)
     attendance = db.Column(db.String(20), nullable=True)
     rank = db.Column(db.String(10), nullable=True)
+    
 
 class Admission(db.Model):
     __tablename__ = 'admission'
