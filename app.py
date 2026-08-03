@@ -101,8 +101,12 @@ with app.app_context():
         
         for col_name, col_type in columns_to_sync:
             if col_name not in existing_columns:
-                db.session.execute(text(f"ALTER TABLE results ADD COLUMN {col_name} {col_type};"))
-                db.session.commit()
+                try:
+                    db.session.execute(text(f"ALTER TABLE results ADD COLUMN {col_name} {col_type};"))
+                    db.session.commit()
+                except Exception as ex:
+                    db.session.rollback() # Agar ek column mein error aaye toh baaki chalta rahe
+                    print(f"Note on column {col_name}: {ex}")
                 
         print("✅ Results table columns & types synced successfully!")
     except Exception as e:
