@@ -165,26 +165,35 @@ class Video(db.Model):
         return f"<Video {self.title}>"
 
 
+# TC Application Model Update
 class TCApplication(db.Model):
+    __tablename__ = 'tc_application'
+    __table_args__ = {'extend_existing': True}
+    
     id = db.Column(db.Integer, primary_key=True)
     student_name = db.Column(db.String(100), nullable=False)
     father_name = db.Column(db.String(100), nullable=False)
     class_section = db.Column(db.String(50), nullable=False)
-    admission_number = db.Column(db.String(50), nullable=False) # Nayi field
+    admission_number = db.Column(db.String(50), nullable=False)
     reason = db.Column(db.Text, nullable=False)
     mobile = db.Column(db.String(15), nullable=False)
-    status = db.Column(db.String(20), default='Pending')     # Nayi field
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(20), default='Pending')
+    # datetime.now(timezone.utc) ka use karna behtar hai
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
+# Bonafide Request Model Update
 class BonafideRequest(db.Model):
+    __tablename__ = 'bonafide_request'
+    __table_args__ = {'extend_existing': True}
+    
     id = db.Column(db.Integer, primary_key=True)
     student_name = db.Column(db.String(100), nullable=False)
     father_name = db.Column(db.String(100), nullable=False)
     class_name = db.Column(db.String(50), nullable=False)
     purpose = db.Column(db.Text, nullable=False)
     mobile = db.Column(db.String(15), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
+    status = db.Column(db.String(20), default='Pending') # Status field yahan bhi add kar di
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 class DownloadableDoc(db.Model):

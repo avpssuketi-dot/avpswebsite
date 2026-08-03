@@ -1,18 +1,19 @@
+import os
+import io
+import urllib.parse
+from datetime import datetime, timezone
+from urllib.parse import urlparse, parse_qs
+from functools import wraps
+
+import pandas as pd
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file, session
 import sqlite3
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from datetime import datetime, timezone
-from urllib.parse import urlparse, parse_qs
-import os
-import io
-import urllib.parse
-import pandas as pd
-from functools import wraps
+from sqlalchemy import text
 from werkzeug.utils import secure_filename
-from sqlalchemy import func
 
-# Cloudinary Import (Isse add karna zaroori hai!)
+# Cloudinary Import
 import cloudinary
 import cloudinary.uploader
 
@@ -27,17 +28,10 @@ from reportlab.lib.styles import getSampleStyleSheet
 
 # ========================= App & DB Setup =========================
 
-import os
-import cloudinary
-from flask import Flask
-from flask_migrate import Migrate  # 1. Import Migrate
 from models import db 
 
 app = Flask(__name__)
 app.secret_key = 'kuch_bhi_secret_string_yahan_likho'
-
-
-
 
 # --- DATABASE CONFIGURATION ---
 db_url = os.environ.get('DATABASE_URL')
@@ -61,11 +55,53 @@ db.init_app(app)
 migrate = Migrate(app, db)
 
 # 3. Models import karein
-from models import Result, Admission, Notice, GalleryImage, Fee, FeeDeposit, User, Video, Inquiry, TCApplication, BonafideRequest, Admission,  Result, DownloadableDoc
+from models import Result, Admission, Notice, GalleryImage, Fee, FeeDeposit, User, Video, Inquiry, TCApplication, BonafideRequest, DownloadableDoc
 
-# 4. Tables Create karein aur Admin setup
+# 4. Tables Create karein, Missing Columns Fix karein aur Admin setup
 with app.app_context():
     db.create_all()
+    
+    # --- AUTOMATIC TABLE & TYPE FIX (Compatible with SQLite & PostgreSQL) ---
+    try:
+        from sqlalchemy import inspect
+        inspector = inspect(db.engine)
+        existing_columns = [col['name'] for col in inspector.get_columns('results')]
+        
+        columns_to_sync = [
+            ("first_term_total", "FLOAT DEFAULT 0"),
+            ("half_yearly_total", "FLOAT DEFAULT 0"),
+            ("grand_total", "FLOAT DEFAULT 0"),
+            ("percentage", "FLOAT DEFAULT 0.0"),
+            ("grade", "VARCHAR(50)"),
+            ("attendance", "VARCHAR(50)"),
+            ("rank", "VARCHAR(50)"),
+            ("hindi", "VARCHAR(10) DEFAULT '0'"),
+            ("english", "VARCHAR(10) DEFAULT '0'"),
+            ("maths", "VARCHAR(10) DEFAULT '0'"),
+            ("science", "VARCHAR(10) DEFAULT '0'"),
+            ("sst", "VARCHAR(10) DEFAULT '0'"),
+            ("computer", "VARCHAR(10) DEFAULT '0'"),
+            ("sanskrit", "VARCHAR(10) DEFAULT '0'"),
+            ("gk", "VARCHAR(10) DEFAULT '0'"),
+            ("drawing", "VARCHAR(10) DEFAULT '0'"),
+            ("evs", "VARCHAR(10) DEFAULT '0'"),
+            ("moral", "VARCHAR(10) DEFAULT '0'"),
+            ("english_grammar", "VARCHAR(10) DEFAULT '0'"),
+            ("conversation", "VARCHAR(10) DEFAULT '0'"),
+            ("pt_marks", "VARCHAR(10) DEFAULT '0'"),
+            ("activity", "VARCHAR(10) DEFAULT '0'"),
+            ("total_marks", "FLOAT DEFAULT 0.0")
+        ]
+        
+        for col_name, col_type in columns_to_sync:
+            if col_name not in existing_columns:
+                db.session.execute(text(f"ALTER TABLE results ADD COLUMN {col_name} {col_type};"))
+                db.session.commit()
+                
+        print("✅ Results table columns & types synced successfully!")
+    except Exception as e:
+        db.session.rollback()
+        print(f"⚠️ Table update note: {e}")
     
     # Admin User Initialization
     admin = User.query.filter_by(username='admin').first()
@@ -75,10 +111,7 @@ with app.app_context():
         db.session.commit()
         print("--- Admin user created successfully ---")
 
-
 # ========================= SECURITY SHIELD =========================
-from functools import wraps
-from flask import session, redirect, url_for, flash
 
 # 1. Decorator ko define karein
 def login_required(f):
@@ -91,7 +124,6 @@ def login_required(f):
     return decorated_function
 
 # ========================= MODELS =========================
-
 
 class Notice(db.Model):
     __table_args__ = {'extend_existing': True}
@@ -1189,6 +1221,17 @@ def delete_selected():
         flash("Koi record select nahi kiya!", "danger")
     return redirect(url_for('upload_results'))
 
+
+@app.route('/delete_tc/<int:id>')
+def delete_tc(id):
+    # Model ka naam sahi kiya (TCApplication)
+    tc_to_delete = TCApplication.query.get_or_404(id) 
+    try:
+        db.session.delete(tc_to_delete)
+        db.session.commit()
+        return redirect(url_for('view_tc_applications'))
+    except Exception as e:
+        return f"There was an issue deleting that record: {e}"
 
 ######## -----------show result----------------------------------------------------------
 

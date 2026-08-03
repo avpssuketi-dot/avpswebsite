@@ -2,44 +2,92 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Admissions - Angels Valley</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; padding: 30px; }
-        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: #1e3a5a; color: white; padding: 12px; text-align: left; }
-        td { padding: 12px; border-bottom: 1px solid #eee; }
-        .btn { background: #2563eb; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 13px; }
+        /* CSS FIX: Website ke header ko yahan hata rahe hain */
+        header { display: none !important; }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        
+        /* Body ka overflow-x hidden hataya taaki sidebar dikhe */
+        body { display: flex !important; min-height: 100vh !important; background: #f4f6f9 !important; overflow-x: auto !important; }
+        
+        /* Sidebar Styles - Z-index aur Fixed position ko strong kiya */
+        .sidebar { 
+            width: 260px !important; 
+            background: #1f4e79 !important; 
+            color: white !important; 
+            height: 100vh !important; 
+            position: fixed !important; 
+            left: 0 !important; 
+            top: 0 !important; 
+            padding-top: 20px !important; 
+            z-index: 9999 !important; 
+        }
+        .sidebar h2 { text-align: center; margin-bottom: 20px; font-size: 20px; color: #ffcc00; }
+        .sidebar a { display: block; color: #cbd5e1 !important; padding: 15px 25px !important; text-decoration: none !important; font-size: 14px !important; border-bottom: 1px solid #255d8f !important; }
+        .sidebar a:hover { background: #163b5d !important; color: white !important; }
+        
+        /* Main Content */
+        .main-content { margin-left: 260px !important; width: calc(100% - 260px) !important; padding: 40px !important; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        
+        h2 { color: #1f4e79; margin-bottom: 20px; }
+        
+        /* Table Layout */
+        .table-wrapper { overflow-x: auto; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 700px; }
+        th { background: #f8fafc; color: #1f4e79; padding: 15px; text-align: left; border-bottom: 2px solid #e2e8f0; font-size: 14px; }
+        td { padding: 15px; border-bottom: 1px solid #eee; font-size: 14px; word-wrap: break-word; }
+        
+        .btn { background: #2563eb; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: 500; display: inline-block; }
+        .btn:hover { background: #1d4ed8; }
+        .back-link { display: inline-block; margin-top: 20px; color: #1f4e79; font-weight: 600; text-decoration: none; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>All Student Admissions ({{ admissions|length }})</h2>
-    
-    <table>
-        <tr>
-            <th>Student Name</th>
-            <th>Father's Name</th>
-            <th>Class</th>
-            <th>Mobile</th>
-            <th>Action</th>
-        </tr>
-        {% for adm in admissions %}
-        <tr>
-            <td>{{ adm.student_name }}</td>
-            <td>{{ adm.father_name }}</td>
-            <td>{{ adm.admission_class }}</td>
-            <td>{{ adm.mobile }}</td>
-            <td>
-                <a href="{{ url_for('view_admission_details', id=adm.id) }}" class="btn">View Details</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    <br>
-    <a href="{{ url_for('admin_dashboard') }}">← Back to Dashboard</a>
-</div>
+    <div class="sidebar">
+        <h2>Angels Valley</h2>
+        <a href="{{ url_for('admin_dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('admin_notices') }}">📢 Manage Notices</a>
+        <a href="{{ url_for('admin_fees') }}">💰 Manage Fees</a>
+        <a href="{{ url_for('view_deposits') }}">📋 View Fee Deposits</a>
+        <a href="{{ url_for('admin_gallery') }}">🖼️ Manage Gallery</a>
+        <a href="{{ url_for('home') }}">🌐 View Website</a>
+        <a href="{{ url_for('admin_logout') }}" style="color: #fca5a5; margin-top: 20px; border-top: 1px dashed #3b82f6;">🚪 Logout</a>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            <h2>All Student Admissions ({{ admissions|length }})</h2>
+            <div class="table-wrapper">
+                <table>
+                    <tr>
+                        <th style="width: 25%;">Student Name</th>
+                        <th style="width: 20%;">Father's Name</th>
+                        <th style="width: 15%;">Class</th>
+                        <th style="width: 20%;">Mobile</th>
+                        <th style="width: 20%;">Action</th>
+                    </tr>
+                    {% for adm in admissions %}
+                    <tr>
+                        <td>{{ adm.student_name }}</td>
+                        <td>{{ adm.father_name }}</td>
+                        <td>{{ adm.admission_class }}</td>
+                        <td>{{ adm.mobile }}</td>
+                        <td>
+                            <a href="{{ url_for('view_admission_details', id=adm.id) }}" class="btn">View Details</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <a href="{{ url_for('admin_dashboard') }}" class="back-link">← Back to Dashboard</a>
+        </div>
+    </div>
 
 </body>
 </html>
