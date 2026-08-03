@@ -1157,7 +1157,7 @@ def upload_results():
             return redirect(request.url)
         
         try:
-            df = pd.read_excel(file, header=None, skiprows=5)
+            df = pd.read_excel(file, header=None, skiprows=5, engine='openpyxl')
             df['norm_col'] = df.iloc[:, 5].apply(normalize)
             df_filtered = df[df['norm_col'] == norm_class].copy()
             
